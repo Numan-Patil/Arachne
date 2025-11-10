@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arachne</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Use Poppins font family -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        /* Custom spinner */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #111; /* Black */
+            animation: spin 1s ease infinite;
+        }
+        .small-spinner {
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border-left-color: #111; /* Black */
+            animation: spin 1s ease infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Styling for generated content */
+        .gemini-content h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #111827; /* gray-900 */
+        }
+        .gemini-content ul {
+            list-style-type: disc;
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+            color: #374151; /* gray-700 */
+        }
+        .gemini-content li {
+            margin-bottom: 0.25rem;
+        }
+        .gemini-content p {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+            color: #374151; /* gray-700 */
+        }
+        .gemini-content a {
+            color: #374151; /* gray-700 */
+            text-decoration: underline;
+        }
+        .gemini-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #e5e7eb; /* gray-200 */
+        }
+        
+        /* Fix for long URLs overflowing */
+        #sourcesList li, #sourcesList a {
+            overflow-wrap: break-word;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-900">
+
+    <div class="container mx-auto max-w-2xl p-4 md:p-8">
+        
+        <header class="text-left mb-10 mt-8">
+            <h1 class="text-3xl md:text-4xl font-semibold text-black">Arachne Web</h1>
+            <p class="text-gray-600 mt-2">Your AI web weaver <b>by Undrstanding</b>, extracting info from any URL.</p>
+        </header>
+
+        <!-- Explainer Box -->
+         <div class="bg-[#abc2fe] border border-blue-300 text-grey p-4 rounded-lg mb-6" role="alert">
+            <p class="font-medium text-black">How this works</p>
+            <p>Directly scraping websites from a browser is blocked by security rules (CORS). This app uses the Gemini AI model with Google Search to analyze and extract info from the URL you provide.</p>
+         </div>
+        <!-- Input Form -->
+        <div class="bg-white p-6 rounded-lg border border-gray-200">
+            <div class="space-y-4">
+                <div>
+                    <label for="url" class="block text-sm font-medium text-gray-700">Website URL</label>
+                    <input type="url" id="url" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-gray-300 focus:ring-0 focus:outline-none" placeholder="https://example.com">
+                </div>
+                
+                <!-- NEW: User-Guided Extraction -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">What to extract?</label>
+                    <div class="flex items-center space-x-4 mt-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="extractSummary" class="rounded border-gray-300 text-black shadow-sm focus:ring-black" checked>
+                            <span class="ml-2 text-sm text-gray-600">Summary</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="extractImages" class="rounded border-gray-300 text-black shadow-sm focus:ring-black" checked>
+                            <span class="ml-2 text-sm text-gray-600">Images</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="extractData" class="rounded border-gray-300 text-black shadow-sm focus:ring-black" checked>
+                            <span class="ml-2 text-sm text-gray-600">Key Data</span>
+                        </label>
+                    </div>
+                </div>
+                <!-- END: User-Guided Extraction -->
+                
+                <button id="scrapeButton" class="w-full flex justify-center items-center gap-2 bg-[#FFD65A] text-black font-medium py-2 px-4 rounded-lg shadow-sm hover:bg-[#F9CC5E]  focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 transition duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                    </svg>
+                    Analyze & Extract
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loading" class="hidden flex justify-center items-center my-8">
+            <div class="spinner"></div>
+            <p class="ml-3 text-gray-600">AI is analyzing the website... This may take a moment.</p>
+        </div>
+
+        <!-- Error Message Box -->
+        <div id="errorBox" class="hidden bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-lg relative my-6" role="alert">
+            <strong class="font-medium">Error:</strong>
+            <span class="block sm:inline" id="errorMessage"></span>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" class="hidden bg-white p-6 mt-8 rounded-lg border border-gray-200">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2 sm:gap-0">
+                <h2 class="text-2xl font-semibold text-black">Extraction Results</h2>
+                <!-- NEW: Export & Copy Buttons -->
+                <div class="flex items-center gap-2">
+                    <button id="downloadButton" class="flex items-center gap-2 bg-gray-100 text-black text-sm font-medium py-1 px-3 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 transition duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Download (.txt)
+                    </button>
+                    <button id="copyButton" class="flex items-center gap-2 bg-gray-100 text-black text-sm font-medium py-1 px-3 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 transition duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-4 12h8a2 2 0 002-2V8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        Copy Results
+                    </button>
+                </div>
+            </div>
+
+            <!-- Genuineness Bar -->
+            <div id="genuinenessBarContainer" class="hidden mb-4">
+                <div id="genuinenessBar" class="flex items-center gap-2 p-3 rounded-lg border">
+                    <span id="genuinenessText" class="font-medium text-sm"></span>
+                </div>
+            </div>
+
+            <div id="resultsContent" class="prose max-w-none gemini-content">
+                <!-- AI-generated content will be injected here -->
+            </div>
+            
+            <div id="sources" class="mt-6 border-t border-gray-200 pt-4">
+                <h3 class="text-lg font-semibold text-black">Sources Found:</h3>
+                <ul id="sourcesList" class="list-disc list-inside text-sm text-gray-600 mt-2">
+                    <!-- Source links will be injected here -->
+                </ul>
+            </div>
+            
+            <!-- NEW: Follow-up Questions Section -->
+            <div id="followUpSection" class="hidden mt-6 border-t border-gray-200 pt-4">
+                <h3 class="text-lg font-semibold text-black mb-2">Follow-up Question</h3>
+                <p class="text-sm text-gray-600 mb-3">Ask a question based on the analysis above.</p>
+                <div class="flex gap-2">
+                    <input type="text" id="followUpInput" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-black focus:ring-black" placeholder="e.g., How many images were found?">
+                    <button id="followUpButton" class="flex justify-center items-center gap-2 bg-black text-white font-medium py-2 px-4 rounded-lg shadow-sm hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 transition duration-200">
+                        Ask
+                    </button>
+                </div>
+                <div id="followUpLoading" class="hidden flex items-center mt-3">
+                    <div class="small-spinner"></div>
+                    <p class="ml-2 text-sm text-gray-600">AI is thinking...</p>
+                </div>
+                <div id="followUpError" class="hidden bg-red-50 border border-red-300 text-red-700 px-4 py-2 rounded-lg relative mt-3 text-sm"></div>
+                <div id="followUpResult" class="prose max-w-none gemini-content text-sm mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200"></div>
+            </div>
+            <!-- END: Follow-up Questions Section -->
+        </div>
+
+        <!-- NEW: History Section -->
+        <div class="mt-8">
+            <div class="flex justify-between items-center">
+                <h2 class="text-2xl font-semibold text-black">History</h2>
+                <button id="clearHistoryButton" class="text-sm text-red-500 hover:text-red hover:underline">Clear History</button>
+            </div>
+            <div id="historyContainer" class="mt-4 bg-white p-4 rounded-lg border border-gray-200 max-h-60 overflow-y-auto">
+                <ul id="historyList" class="space-y-3">
+                    <!-- History items will be injected here -->
+                </ul>
+                <p id="historyEmpty" class="text-gray-500 text-sm">No analysis history found.</p>
+            </div>
+        </div>
+        <!-- END: History Section -->
+
+    </div>
+
+        <script>
+        // Global variables for new features
+        let currentAnalysisContext = ""; // For follow-up questions
+        let currentUrl = ""; // For follow-up and history
+        let history = []; // For history
+    
+        // DOM Elements
+        const scrapeButton = document.getElementById('scrapeButton');
+        const urlInput = document.getElementById('url');
+        const loading = document.getElementById('loading');
+        const resultsDiv = document.getElementById('results');
+        const resultsContent = document.getElementById('resultsContent');
+        const sourcesList = document.getElementById('sourcesList');
+        const errorBox = document.getElementById('errorBox');
+        const errorMessage = document.getElementById('errorMessage');
+        
+        // Genuineness bar
+        const genuinenessBarContainer = document.getElementById('genuinenessBarContainer');
+        const genuinenessBar = document.getElementById('genuinenessBar');
+        const genuinenessText = document.getElementById('genuinenessText');
+        
+        // Extraction Toggles
+        const extractSummary = document.getElementById('extractSummary');
+        const extractImages = document.getElementById('extractImages');
+        const extractData = document.getElementById('extractData');
+
+        // Export/Copy
+        const copyButton = document.getElementById('copyButton');
+        const downloadButton = document.getElementById('downloadButton');
+
+        // Follow-up
+        const followUpSection = document.getElementById('followUpSection');
+        const followUpInput = document.getElementById('followUpInput');
+        const followUpButton = document.getElementById('followUpButton');
+        const followUpLoading = document.getElementById('followUpLoading');
+        const followUpError = document.getElementById('followUpError');
+        const followUpResult = document.getElementById('followUpResult');
+        
+        // History
+        const historyContainer = document.getElementById('historyContainer');
+        const historyList = document.getElementById('historyList');
+        const historyEmpty = document.getElementById('historyEmpty');
+        const clearHistoryButton = document.getElementById('clearHistoryButton');
+
+        // --- API Configuration ---
+        // The API key is now stored securely on the backend server
+        // All requests are proxied through /api/generate-content
+        const apiUrl = '/api/generate-content';
+        // --- End of API Configuration ---
+
+        // --- Event Listeners ---
+        document.addEventListener('DOMContentLoaded', loadHistory); // Load history on page load
+        scrapeButton.addEventListener('click', handleScrape);
+        copyButton.addEventListener('click', copyResultsToClipboard);
+        downloadButton.addEventListener('click', downloadResultsAsTxt);
+        followUpButton.addEventListener('click', handleFollowUp);
+        clearHistoryButton.addEventListener('click', clearHistory);
+        // --- End Event Listeners ---
+
+        async function handleScrape() {
+            currentUrl = urlInput.value;
+            if (!currentUrl) {
+                showError("Please fill in the URL field.");
+                return;
+            }
+
+            // --- Build Extraction Task List ---
+            let extractionTasks = [];
+            if (extractSummary.checked) extractionTasks.push("Provide a concise summary.");
+            if (extractImages.checked) extractionTasks.push("Extract all key images, providing both a preview and a direct link for each.");
+            if (extractData.checked) extractionTasks.push("Extract any key data points, headings, or lists.");
+            
+            if (extractionTasks.length === 0) {
+                showError("Please select at least one item to extract.");
+                return;
+            }
+            const taskString = extractionTasks.join("\n- ");
+            // --- End Build Extraction Task List ---
+
+            // Reset UI
+            loading.classList.remove('hidden');
+            resultsDiv.classList.add('hidden');
+            errorBox.classList.add('hidden');
+            followUpSection.classList.add('hidden');
+            followUpResult.classList.add('hidden');
+            followUpError.classList.add('hidden');
+            resultsContent.innerHTML = '';
+            sourcesList.innerHTML = '';
+            copyButton.textContent = 'Copy Results';
+            genuinenessBarContainer.classList.add('hidden');
+            genuinenessBar.classList.remove('bg-green-100', 'border-green-300', 'bg-yellow-100', 'border-yellow-300', 'bg-red-100', 'border-red-300');
+            genuinenessText.classList.remove('text-green-800', 'text-yellow-800', 'text-red-800');
+
+
+            try {
+                const systemPrompt = `You are a powerful web scraper and data extractor. Your goal is to analyze the provided URL and extract specific information.
+                - Analyze the URL: ${currentUrl}
+                
+                - First, perform a "Genuineness & Safety Check" for the website. Analyze if the site appears reputable (e.g., has contact info, clear purpose) or has red flags (e.g., excessive ads, suspicious claims).
+                - Based on your check, decide on a genuineness level: GREEN (looks genuine), YELLOW (use caution), or RED (looks suspicious).
+                - **CRITICAL:** Start your ENTIRE response with a single HTML comment in this exact format: \`<!-- GENUINENESS: [YOUR_DECISION] -->\` where [YOUR_DECISION] is GREEN, YELLOW, or RED.
+
+                - Next, extract the main title of the page (e.g., from the <title> tag or main <h1>).
+                - **CRITICAL:** After the genuineness comment, add a second HTML comment in this exact format: \`<!-- TITLE: [Page Title] -->\` where [Page Title] is the title you found.
+                
+                - After those comments, perform ONLY the following tasks:
+                - ${taskString}
+                
+                - Use this exact format for images: \`<img src="image-url.jpg" alt="Image preview" referrerpolicy="no-referrer" style="max-height: 250px; border-radius: 0.5rem; border: 1px solid #e5e7eb;" onerror="this.outerHTML='<div style=\\'padding: 1rem; border: 1px dashed #e5e7eb; border-radius: 0.5rem; color: #6b7280; font-style: italic;\\'>Image preview failed to load (this is common due to browser security).</div>';"><br><a href="image-url.jpg" target="_blank" rel="noopener noreferrer" style="text-decoration: underline; color: #374151;">Open Image in New Tab</a><br><br>\`
+                - Format your response in clean HTML using headings (h2), paragraphs (p), and lists (ul, li). Do not include \`<html>\` or \`<body>\` tags.
+                - DO NOT mention genuineness in the visible HTML report.`;
+
+                const userQuery = `Analyze ${currentUrl} for the following: ${taskString}`;
+
+                const payload = {
+                    contents: [{ parts: [{ text: userQuery }] }],
+                    tools: [{ "google_search": {} }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] },
+                };
+
+                const response = await fetchWithBackoff(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || `API Error: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
+
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    let text = candidate.content.parts[0].text;
+                    let genuinenessLevel = "YELLOW"; // Default
+                    let pageTitle = currentUrl; // Default to URL
+
+                    // --- Genuineness Check ---
+                    const genuinenessRegex = /<!-- GENUINENESS: (GREEN|YELLOW|RED) -->/;
+                    const match = text.match(genuinenessRegex);
+                    
+                    if (match && match[1]) {
+                        genuinenessLevel = match[1];
+                        text = text.replace(genuinenessRegex, '').trim(); // Remove comment
+                        displayGenuinenessBar(genuinenessLevel);
+                    }
+                    // --- End Genuineness Check ---
+
+                    // --- Page Title Check ---
+                    const titleRegex = /<!-- TITLE: (.*?) -->/;
+                    const titleMatch = text.match(titleRegex);
+                    if (titleMatch && titleMatch[1]) {
+                        pageTitle = titleMatch[1].trim();
+                        text = text.replace(titleRegex, '').trim(); // Remove comment
+                    }
+                    // --- End Page Title Check ---
+
+                    resultsContent.innerHTML = text;
+                    currentAnalysisContext = text; // Save for follow-up
+                    followUpSection.classList.remove('hidden'); // Show follow-up
+
+                    // Process and display grounding sources
+                    const groundingMetadata = candidate.groundingMetadata;
+                    if (groundingMetadata && groundingMetadata.groundingAttributions) {
+                        const sources = groundingMetadata.groundingAttributions
+                            .map(attr => attr.web?.uri).filter(uri => uri);
+                        if (!sources.includes(currentUrl)) sources.unshift(currentUrl);
+                        sourcesList.innerHTML = sources
+                            .map(uri => `<li><a href="${uri}" target="_blank" rel="noopener noreferrer" class="text-gray-700 hover:underline">${uri}</a></li>`).join('');
+                    } else {
+                        sourcesList.innerHTML = `<li><a href="${currentUrl}" target="_blank" rel="noopener noreferrer" class="text-gray-700 hover:underline">${currentUrl}</a></li>`;
+                    }
+
+                    resultsDiv.classList.remove('hidden');
+                    // Save to history
+                    saveToHistory(currentUrl, pageTitle, text, genuinenessLevel);
+                    
+                } else {
+                    throw new Error("No valid content returned from the AI model.");
+                }
+
+            } catch (error) {
+                console.error("Scraping failed:", error);
+                showError(error.message || "An unknown error occurred.");
+            } finally {
+                loading.classList.add('hidden');
+            }
+        }
+        
+        function displayGenuinenessBar(genuinenessLevel) {
+            // Reset classes
+            genuinenessBar.classList.remove('bg-green-100', 'border-green-300', 'bg-yellow-100', 'border-yellow-300', 'bg-red-100', 'border-red-300');
+            genuinenessText.classList.remove('text-green-800', 'text-yellow-800', 'text-red-800');
+
+            if (genuinenessLevel === 'GREEN') {
+                genuinenessBar.classList.add('bg-green-100', 'border', 'border-green-300');
+                genuinenessText.classList.add('text-green-800');
+                genuinenessText.textContent = 'Genuineness Check: Appears Genuine';
+            } else if (genuinenessLevel === 'YELLOW') {
+                genuinenessBar.classList.add('bg-yellow-100', 'border', 'border-yellow-300');
+                genuinenessText.classList.add('text-yellow-800');
+                genuinenessText.textContent = 'Genuineness Check: Use Caution';
+            } else if (genuinenessLevel === 'RED') {
+                genuinenessBar.classList.add('bg-red-100', 'border', 'border-red-300');
+                genuinenessText.classList.add('text-red-800');
+                genuinenessText.textContent = 'Genuineness Check: Appears Suspicious';
+            }
+            genuinenessBarContainer.classList.remove('hidden');
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorBox.classList.remove('hidden');
+        }
+
+        // --- New Function: Follow-up ---
+        async function handleFollowUp() {
+            const question = followUpInput.value;
+            if (!question) return;
+
+            followUpLoading.classList.remove('hidden');
+            followUpError.classList.add('hidden');
+            followUpResult.classList.add('hidden');
+
+            try {
+                const systemPrompt = `You are an AI assistant. The user previously analyzed this URL: ${currentUrl}.
+                The results of that analysis were:
+                <context>
+                ${currentAnalysisContext}
+                </context>
+                
+                Now, please answer the user's follow-up question based *only* on that context.
+                User Question: ${question}`;
+
+                const payload = {
+                    contents: [{ parts: [{ text: systemPrompt }] }],
+                    // NO grounding tool, as we want it to answer from context
+                };
+
+                const response = await fetchWithBackoff(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error('Failed to get follow-up response.');
+
+                const result = await response.json();
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (text) {
+                    followUpResult.innerHTML = text; // Note: This is simpler, assumes text or simple HTML
+                    followUpResult.classList.remove('hidden');
+                } else {
+                    throw new Error("No valid follow-up content returned.");
+                }
+
+            } catch (error) {
+                console.error("Follow-up failed:", error);
+                followUpError.textContent = error.message || "An unknown error occurred.";
+                followUpError.classList.remove('hidden');
+            } finally {
+                followUpLoading.classList.add('hidden');
+            }
+        }
+
+        // --- New Function: Clean text for copy/download ---
+        function getCleanTextResults() {
+            let textToCopy = resultsContent.innerHTML
+                .replace(/<img src="[^"]*"[^>]*><br><a [^>]*href="([^"]*)"[^>]*>Open Image in New Tab<\/a><br><br>/gi, '\nImage URL: $1\n') 
+                .replace(/<div style=[^>]+>Image preview failed to load[^<]+<\/div><br><a [^>]*href="([^"]*)"[^>]*>Open Image in New Tab<\/a><br><br>/gi, '\nImage URL: $1\n')
+                .replace(/<a [^>]*href="([^"]*)"[^>]*>Open Image in New Tab<\/a>/g, '\nImage URL: $1\n')
+                .replace(/<br><br>/g, '\n') // Handle line breaks
+                .replace(/<br>/g, '\n')
+                .replace(/<h2>/g, '\n## ') // Convert h2 to markdown-ish
+                .replace(/<\/h2>/g, '\n')
+                .replace(/<li>/g, '\n* ') // Convert li to markdown-ish
+                .replace(/<[^>]+>/g, ' ') // Strip other HTML tags
+                .replace(/  +/g, ' ')
+                .trim();
+            return textToCopy;
+        }
+
+        // --- New Function: Copy to Clipboard ---
+        function copyResultsToClipboard() {
+            const textToCopy = getCleanTextResults();
+
+            const textArea = document.createElement('textarea');
+            textArea.value = textToCopy;
+            textArea.style.position = 'fixed';
+            textArea.style.opacity = 0;
+            document.body.appendChild(textArea);
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                copyButton.textContent = 'Copied!';
+                setTimeout(() => { 
+                    if (copyButton.textContent === 'Copied!') {
+                        copyButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-4 12h8a2 2 0 002-2V8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg> Copy Results`;
+                    }
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+            }
+            document.body.removeChild(textArea);
+        }
+        
+        // --- New Function: Download as .txt ---
+        function downloadResultsAsTxt() {
+            const textToDownload = getCleanTextResults();
+            const blob = new Blob([textToDownload], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'extraction_results.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // --- New Function: Load History ---
+        function loadHistory() {
+            const storedHistory = localStorage.getItem('analysisHistory');
+            if (storedHistory) {
+                history = JSON.parse(storedHistory);
+            }
+            renderHistory();
+        }
+
+        // --- New Function: Render History ---
+        function renderHistory() {
+            historyList.innerHTML = '';
+            if (history.length === 0) {
+                historyEmpty.classList.remove('hidden');
+                return;
+            }
+            historyEmpty.classList.add('hidden');
+            
+            history.forEach((item, index) => {
+               const li = document.createElement('li');
+               li.className = 'p-3 rounded-lg hover:bg-gray-100 cursor-pointer border border-gray-200';
+               li.onclick = () => loadFromHistory(index);
+               
+               const titleSpan = document.createElement('span');
+               titleSpan.className = 'block text-sm font-medium text-black truncate';
+               titleSpan.textContent = item.title;
+               
+               const urlSpan = document.createElement('span');
+               urlSpan.className = 'block text-xs text-gray-500 truncate';
+               urlSpan.textContent = item.url;
+               
+               li.appendChild(titleSpan);
+               li.appendChild(urlSpan);
+               historyList.appendChild(li);
+            });
+        }
+        
+        // --- New Function: Save to History ---
+       function saveToHistory(url, title, content, genuineness) {
+            // Check if this URL is already the most recent item
+            if (history.length > 0 && history[0].url === url) {
+                return; // Don't add duplicates consecutively
+            }
+            
+            // Remove any existing entry for this URL
+            history = history.filter(item => item.url !== url);
+            
+            // Add new item to the beginning
+           history.unshift({ url, title, content, genuineness });
+            
+            // Limit history to 10 items
+            if (history.length > 10) {
+                history = history.slice(0, 10);
+            }
+            
+            localStorage.setItem('analysisHistory', JSON.stringify(history));
+            renderHistory();
+        }
+        
+        // --- New Function: Load from History ---
+        function loadFromHistory(index) {
+            const item = history[index];
+            if (!item) return;
+
+            // Hide analysis/error/loading
+            loading.classList.add('hidden');
+            errorBox.classList.add('hidden');
+            
+            // Populate UI
+            urlInput.value = item.url;
+            resultsContent.innerHTML = item.content;
+            displayGenuinenessBar(item.genuineness);
+            
+            // Set context for follow-ups
+            currentAnalysisContext = item.content;
+            currentUrl = item.url;
+            
+            // Show results
+            resultsDiv.classList.remove('hidden');
+            followUpSection.classList.remove('hidden');
+            followUpResult.classList.add('hidden');
+            followUpError.classList.add('hidden');
+            followUpInput.value = '';
+
+            // Reset sources (history item doesn't save this)
+            sourcesList.innerHTML = `<li><a href="${item.url}" target="_blank" rel="noopener noreferrer" class="text-gray-700 hover:underline">${item.url}</a></li>`;
+        }
+
+        // --- New Function: Clear History ---
+        function clearHistory() {
+            history = [];
+            localStorage.removeItem('analysisHistory');
+            renderHistory();
+        }
+
+        // --- Exponential Backoff Function ---
+        async function fetchWithBackoff(url, options, retries = 3, delay = 1000) {
+            try {
+                const response = await fetch(url, options);
+                if (response.status === 429 && retries > 0) {
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    return fetchWithBackoff(url, options, retries - 1, delay * 2);
+                }
+                return response;
+            } catch (error) {
+                if (retries > 0) {
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    return fetchWithBackoff(url, options, retries - 1, delay * 2);
+                }
+                throw error;
+            }
+        }
+
+    </script>
+</body>
+</html>
