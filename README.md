@@ -79,6 +79,7 @@ MIT
 
 ## Credits
 
-Created by **Undrstanding**
+Created with 💖 by **Undrstanding**
+
 
 
