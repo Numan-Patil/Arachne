@@ -558,6 +558,9 @@
                 </context>
                 
                 Now, please answer the user's follow-up question based *only* on that context.
+                Format your response in clean HTML using headings (h2/h3), paragraphs (p), and unordered lists (ul > li). 
+                Do not include <html> or <body> tags. Keep it concise and structured. 
+                Avoid phrases like "Based on the context provided"; instead, present the answer directly.
                 User Question: ${question}`;
 
                 const payload = {
@@ -574,10 +577,16 @@
                 if (!response.ok) throw new Error('Failed to get follow-up response.');
 
                 const result = await response.json();
-                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                let text = result.candidates?.[0]?.content?.parts?.[0]?.text;
 
                 if (text) {
-                    followUpResult.innerHTML = text; // Note: This is simpler, assumes text or simple HTML
+                    // If model already returned HTML, render it as-is; else structure markdown/plain text
+                    if (looksLikeHtml(text)) {
+                        followUpResult.innerHTML = text;
+                    } else {
+                        const structured = toStructuredHtml(text);
+                        followUpResult.innerHTML = structured;
+                    }
                     followUpResult.classList.remove('hidden');
                 } else {
                     throw new Error("No valid follow-up content returned.");
@@ -592,6 +601,76 @@
             }
         }
 
+        // --- Helper: Detect simple HTML presence ---
+        function looksLikeHtml(input) {
+            if (!input || typeof input !== 'string') return false;
+            // Detect typical HTML tags like <h1>, <p>, <ul>, <li>, <strong>, etc.
+            return /<\/?[a-z][\s\S]*?>/i.test(input);
+        }
+
+        // --- Helper: Convert simple Markdown-ish text to structured HTML ---
+        function toStructuredHtml(input) {
+            if (!input || typeof input !== 'string') return '';
+            const lines = input.split(/\r?\n/);
+            const html = [];
+            let inList = false;
+
+            function closeListIfOpen() {
+                if (inList) {
+                    html.push('</ul>');
+                    inList = false;
+                }
+            }
+
+            function escapeHtml(str) {
+                return str.replace(/&/g, '&amp;')
+                          .replace(/</g, '&lt;')
+                          .replace(/>/g, '&gt;');
+            }
+
+            function boldify(str) {
+                return str.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            }
+
+            for (let raw of lines) {
+                const line = raw.trim();
+                if (!line) {
+                    closeListIfOpen();
+                    continue;
+                }
+                // Headings
+                if (line.startsWith('### ')) {
+                    closeListIfOpen();
+                    html.push('<h3>' + boldify(escapeHtml(line.slice(4))) + '</h3>');
+                    continue;
+                }
+                if (line.startsWith('## ')) {
+                    closeListIfOpen();
+                    html.push('<h2>' + boldify(escapeHtml(line.slice(3))) + '</h2>');
+                    continue;
+                }
+                if (line.startsWith('# ')) {
+                    closeListIfOpen();
+                    html.push('<h2>' + boldify(escapeHtml(line.slice(2))) + '</h2>');
+                    continue;
+                }
+                // List items
+                if (/^[-*]\s+/.test(line)) {
+                    if (!inList) {
+                        html.push('<ul>');
+                        inList = true;
+                    }
+                    const item = line.replace(/^[-*]\s+/, '');
+                    html.push('<li>' + boldify(escapeHtml(item)) + '</li>');
+                    continue;
+                }
+                // Default paragraph
+                closeListIfOpen();
+                html.push('<p>' + boldify(escapeHtml(line)) + '</p>');
+            }
+            closeListIfOpen();
+            return html.join('\n');
+        }
         // --- New Function: Clean text for copy/download ---
         function getCleanTextResults() {
             let textToCopy = resultsContent.innerHTML
