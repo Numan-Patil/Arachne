@@ -88,9 +88,14 @@
         </header>
 
         <!-- Explainer Box -->
-         <div class="bg-[#abc2fe] border border-blue-300 text-grey p-4 rounded-lg mb-6" role="alert">
+         <div id="explainerBox" class="bg-[#abc2fe] border border-blue-300 text-grey p-4 rounded-lg mb-6 relative" role="alert">
+             <button id="closeExplainerButton" class="absolute top-2.5 right-2.5 text-black hover:text-gray-700 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+             </button>
              <p class="font-medium text-black">How this works</p>
-             <p>Directly scraping websites from a browser is blocked by security rules (CORS). This app uses the Gemini AI model with Google Search to analyze and extract info from the URL you provide.</p>
+             <p class="pr-6">Directly scraping websites from a browser is blocked by security rules (CORS). This app uses the Gemini AI model with Google Search to analyze and extract info from the URL you provide.</p>
          </div>
         <!-- Input Form -->
         <div class="bg-white p-6 rounded-lg border border-gray-200">
@@ -237,6 +242,10 @@
         const errorBox = document.getElementById('errorBox');
         const errorMessage = document.getElementById('errorMessage');
         
+        // NEW: Explainer Box elements
+        const explainerBox = document.getElementById('explainerBox');
+        const closeExplainerButton = document.getElementById('closeExplainerButton');
+        
         // Genuineness bar
         const genuinenessBarContainer = document.getElementById('genuinenessBarContainer');
         const genuinenessBar = document.getElementById('genuinenessBar');
@@ -364,6 +373,15 @@
         downloadButton.addEventListener('click', downloadResultsAsTxt);
         followUpButton.addEventListener('click', handleFollowUp);
         clearHistoryButton.addEventListener('click', clearHistory);
+        
+        // NEW: Explainer box close listener
+        if (closeExplainerButton) {
+            closeExplainerButton.addEventListener('click', () => {
+                if (explainerBox) {
+                    explainerBox.classList.add('hidden');
+                }
+            });
+        }
         // --- End Event Listeners ---
 
         async function handleScrape() {
