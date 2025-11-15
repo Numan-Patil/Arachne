@@ -111,7 +111,7 @@
     <div class="container mx-auto max-w-2xl p-4 md:p-8">
         
         <header class="text-left mb-10 mt-8">
-            <h1 class="text-3xl md:text-4xl font-semibold text-black">Arachne Web</h1>
+            <h1 class="text-3xl md:text-4xl font-semibold text-black">Arachne - For Humans</h1>
             <p class="text-gray-600 mt-2">Your AI web weaver <b>by Undrstanding</b>, extracting info from any URL.</p>
         </header>
 
@@ -164,7 +164,7 @@
                 <!-- NEW: User-Guided Extraction -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700">What to extract?</label>
-                    <div class="flex items-center space-x-4 mt-2">
+                    <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mt-2">
                         <label class="flex items-center">
                             <input type="checkbox" id="extractSummary" class="rounded border-gray-300 text-black shadow-sm focus:ring-black" checked>
                             <span class="ml-2 text-sm text-gray-600">Summary</span>
@@ -177,6 +177,12 @@
                             <input type="checkbox" id="extractData" class="rounded border-gray-300 text-black shadow-sm focus:ring-black" checked>
                             <span class="ml-2 text-sm text-gray-600">Key Data</span>
                         </label>
+                        <!-- NEW: Tracking & Privacy Checkbox -->
+                        <label class="flex items-center">
+                            <input type="checkbox" id="extractTracking" class="rounded border-gray-300 text-black shadow-sm focus:ring-black" checked>
+                            <span class="ml-2 text-sm text-gray-600">Tracking & Privacy</span>
+                        </label>
+                        <!-- END: Tracking & Privacy Checkbox -->
                     </div>
                 </div>
                 <!-- END: User-Guided Extraction -->
@@ -315,6 +321,7 @@
         const extractSummary = document.getElementById('extractSummary');
         const extractImages = document.getElementById('extractImages');
         const extractData = document.getElementById('extractData');
+        const extractTracking = document.getElementById('extractTracking'); // NEW: Get tracking checkbox
 
         // Export/Copy
         const copyButton = document.getElementById('copyButton');
@@ -462,12 +469,15 @@
                     Analyzing...
                 `;
                 
-                // Disable history list interaction
-                historyList.classList.add('opacity-50', 'pointer-events-none');
-
                 // NEW: Disable context buttons
                 contextButtonContainer.classList.add('opacity-50', 'pointer-events-none');
                 document.querySelectorAll('input[name="analysisContext"]').forEach(input => input.disabled = true);
+
+                // NEW: Disable extraction checkboxes
+                extractSummary.disabled = true;
+                extractImages.disabled = true;
+                extractData.disabled = true;
+                extractTracking.disabled = true;
 
             } else {
                 // Enable buttons
@@ -489,6 +499,12 @@
                 // NEW: Enable context buttons
                 contextButtonContainer.classList.remove('opacity-50', 'pointer-events-none');
                 document.querySelectorAll('input[name="analysisContext"]').forEach(input => input.disabled = false);
+
+                // NEW: Enable extraction checkboxes
+                extractSummary.disabled = false;
+                extractImages.disabled = false;
+                extractData.disabled = false;
+                extractTracking.disabled = false;
             }
         }
         // --- END: Helper function ---
@@ -573,6 +589,27 @@
                     extractionTasks.push("Extract any key data points, headings, or lists from the main content.");
                 }
             }
+            
+            // NEW: Add Tracking task
+            if (extractTracking.checked) {
+                extractionTasks.push(`
+Investigate the website's privacy policy and any public user/security reports regarding its tracking practices.
+Format this entire section starting with an \`<h2>Tracking & Privacy Analysis</h2>\`.
+After the heading, create a summary box using this exact HTML structure:
+\`<div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.75rem 1rem; margin-bottom: 1rem;">
+<p style="font-weight: 600; color: #111827; margin-bottom: 0.5rem;">Privacy Overview:</p>
+<p style="margin-bottom: 0.5rem;">[Your one-paragraph summary of the privacy situation goes here.]</p>
+<h4 style="font-weight: 600; color: #111827; margin-top: 0.75rem; margin-bottom: 0.5rem;">Potential Data Collection:</h4>
+<ul>
+  <li>[Tracked Item 1]</li>
+  <li>[Tracked Item 2]</li>
+  <li>[etc...]</li>
+</ul>
+</div>\`
+If no specific tracking info is found, state that clearly within the summary and list.
+`);
+            }
+            // END: Add Tracking task
             
             if (extractionTasks.length === 0) {
                 showError("Please select at least one item to extract.");
