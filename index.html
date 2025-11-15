@@ -76,6 +76,34 @@
             overflow-wrap: break-word;
             word-break: break-all;
         }
+
+        /* --- NEW: Styling for Context Buttons --- */
+        /* Style the label as a button, hide the actual radio input */
+        .context-button {
+            display: inline-block;
+            padding: 0.5rem 0.75rem;
+            border-radius: 9999px; /* pill shape */
+            border: 1px solid #d1d5db; /* gray-300 */
+            background-color: #f9fafb; /* gray-50 */
+            color: #374151; /* gray-700 */
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        /* Style for the selected (checked) button */
+        input[type="radio"]:checked + .context-button {
+            background-color: #111827; /* gray-900 */
+            color: #ffffff; /* white */
+            border-color: #111827; /* gray-900 */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        /* Hover effect for non-selected buttons */
+        input[type="radio"]:not(:checked) + .context-button:hover {
+            border-color: #9ca3af; /* gray-400 */
+        }
+        /* --- End Context Button Styling --- */
+
     </style>
 </head>
 <body class="bg-white text-gray-900">
@@ -100,6 +128,34 @@
         <!-- Input Form -->
         <div class="bg-white p-6 rounded-lg border border-gray-200">
             <div class="space-y-4">
+                <!-- NEW: Analysis Context -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Analysis Context</label>
+                    <div class="flex flex-wrap gap-2">
+                        <div>
+                            <input type="radio" id="ctx-general" name="analysisContext" value="General" class="sr-only" checked>
+                            <label for="ctx-general" class="context-button">General</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="ctx-job" name="analysisContext" value="Job/Internship" class="sr-only">
+                            <label for="ctx-job" class="context-button">Job/Internship</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="ctx-payments" name="analysisContext" value="Payments" class="sr-only">
+                            <label for="ctx-payments" class="context-button">Payments</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="ctx-ecommerce" name="analysisContext" value="E-commerce" class="sr-only">
+                            <label for="ctx-ecommerce" class="context-button">E-commerce</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="ctx-travel" name="analysisContext" value="Travel" class="sr-only">
+                            <label for="ctx-travel" class="context-button">Travel</label>
+                        </div>
+                    </div>
+                </div>
+                <!-- END: Analysis Context -->
+
                 <div>
                     <label for="url" class="block text-sm font-medium text-gray-700">Website URL</label>
                     <input type="url" id="url" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-gray-300 focus:ring-0 focus:outline-none" placeholder="https://example.com">
@@ -125,7 +181,11 @@
                 </div>
                 <!-- END: User-Guided Extraction -->
                 
-                <button id="scrapeButton" class="w-full flex justify-center items-center gap-2 bg-[#FFD65A] text-black font-medium py-2 px-4 rounded-lg shadow-sm hover:bg-[#F9CC5E]  focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 transition duration-200">
+                <!-- NEW: Analysis Context -->
+                <!-- MOVED TO TOP -->
+                <!-- END: Analysis Context -->
+
+                <button id="scrapeButton" class="w-full flex justify-center items-center gap-2 bg-[#FFD65A] text-black font-medium py-2 px-4 rounded-lg shadow-sm hover:bg-[#F9CC5E]  focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 transition duration-200 mt-4">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
                     </svg>
@@ -273,6 +333,10 @@
         const historyList = document.getElementById('historyList');
         const historyEmpty = document.getElementById('historyEmpty');
         const clearHistoryButton = document.getElementById('clearHistoryButton');
+        
+        // NEW: Context Button Container
+        const contextButtonContainer = document.querySelector('input[name="analysisContext"]').closest('div.flex');
+
 
         // --- API Configuration ---
         // The API key is now stored securely on the backend server
@@ -384,6 +448,52 @@
         }
         // --- End Event Listeners ---
 
+        // --- NEW: Helper function to toggle UI disabled state ---
+        function setUiLoading(isLoading) {
+            if (isLoading) {
+                // Disable buttons
+                scrapeButton.disabled = true;
+                followUpButton.disabled = true;
+                clearHistoryButton.disabled = true;
+
+                // Update scrape button text
+                scrapeButton.innerHTML = `
+                    <div class="spinner" style="width: 20px; height: 20px; border-width: 3px;"></div>
+                    Analyzing...
+                `;
+                
+                // Disable history list interaction
+                historyList.classList.add('opacity-50', 'pointer-events-none');
+
+                // NEW: Disable context buttons
+                contextButtonContainer.classList.add('opacity-50', 'pointer-events-none');
+                document.querySelectorAll('input[name="analysisContext"]').forEach(input => input.disabled = true);
+
+            } else {
+                // Enable buttons
+                scrapeButton.disabled = false;
+                followUpButton.disabled = false;
+                clearHistoryButton.disabled = false;
+
+                // Restore scrape button text
+                scrapeButton.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                    </svg>
+                    Analyze & Extract
+                `;
+                
+                // Enable history list interaction
+                historyList.classList.remove('opacity-50', 'pointer-events-none');
+
+                // NEW: Enable context buttons
+                contextButtonContainer.classList.remove('opacity-50', 'pointer-events-none');
+                document.querySelectorAll('input[name="analysisContext"]').forEach(input => input.disabled = false);
+            }
+        }
+        // --- END: Helper function ---
+
+
         async function handleScrape() {
             currentUrl = urlInput.value.trim(); // Also trim whitespace
             urlInput.value = currentUrl; // Update input field with trimmed value
@@ -412,11 +522,57 @@
                 return;
             }
 
+            // --- NEW: Get Analysis Context (Moved Up) ---
+            const selectedContext = document.querySelector('input[name="analysisContext"]:checked').value || 'General';
+            let contextInstruction = "Analyze the site's general purpose and trustworthiness.";
+            
+            if (selectedContext === 'Job/Internship') {
+                contextInstruction = "Analyze if this site appears to be a legitimate place for job applications or internships. Look for red flags specific to job scams (e.g., asking for money, vague job descriptions, no company info).";
+            } else if (selectedContext === 'Payments') {
+                contextInstruction = "Analyze if this site appears to be secure and trustworthy for making payments. Look for HTTPS, clear privacy policies, and standard, non-suspicious checkout procedures.";
+            } else if (selectedContext === 'E-commerce') {
+                contextInstruction = "Analyze if this site appears to be a legitimate e-commerce store. Look for product details, valid contact info, return policies, and secure checkout indicators.";
+            } else if (selectedContext === 'Travel') {
+                contextInstruction = "Analyze if this site appears to be a reliable and legitimate platform for booking travel (flights, hotels, etc.). Check for real reviews, secure payment options, and clear booking details.";
+            }
+            // --- END: Get Analysis Context ---
+
             // --- Build Extraction Task List ---
             let extractionTasks = [];
-            if (extractSummary.checked) extractionTasks.push("Provide a concise summary.");
+            
+            if (extractSummary.checked) {
+                // NEW: Make summary context-aware
+                if (selectedContext === 'Job/Internship') {
+                    extractionTasks.push("Provide a concise summary, focusing on its legitimacy and features for job applications or internships.");
+                } else if (selectedContext === 'Payments') {
+                    extractionTasks.push("Provide a concise summary, focusing on its security features and apparent trustworthiness for making payments.");
+                } else if (selectedContext === 'E-commerce') {
+                    extractionTasks.push("Provide a concise summary, focusing on it as an e-commerce store (product variety, policies, checkout process).");
+                } else if (selectedContext === 'Travel') {
+                    extractionTasks.push("Provide a concise summary, focusing on its reliability and features for booking travel.");
+                } else {
+                    // General context
+                    extractionTasks.push("Provide a concise summary of the website's main purpose and content.");
+                }
+            }
+
             if (extractImages.checked) extractionTasks.push("Extract all key images, providing both a preview and a direct link for each.");
-            if (extractData.checked) extractionTasks.push("Extract any key data points, headings, or lists.");
+            
+            if (extractData.checked) {
+                // NEW: Make data extraction context-aware
+                if (selectedContext === 'Job/Internship') {
+                    extractionTasks.push("Extract key data points relevant to jobs, such as 'Careers' links, company info, or job listing examples.");
+                } else if (selectedContext === 'Payments') {
+                    extractionTasks.push("Extract key data points relevant to payments, such as 'Accepted Payment Methods', 'Security' or 'PCI Compliance' info, or trust badges.");
+                } else if (selectedContext === 'E-commerce') { // <-- FIX: Corrected typo 'selectedVontent'
+                    extractionTasks.push("Extract key data points relevant to e-commerce, such as 'Return Policy', 'Shipping Info', product categories, or 'Contact Us' details.");
+                } else if (selectedContext === 'Travel') { // <-- FIX: Added missing 'Travel' context
+                    extractionTasks.push("Extract key data points relevant to travel booking, such as 'Destinations', 'Booking Types' (flights, hotels), or 'Customer Support' info.");
+                } else {
+                    // General context
+                    extractionTasks.push("Extract any key data points, headings, or lists from the main content.");
+                }
+            }
             
             if (extractionTasks.length === 0) {
                 showError("Please select at least one item to extract.");
@@ -424,6 +580,12 @@
             }
             const taskString = extractionTasks.join("\n- ");
             // --- End Build Extraction Task List ---
+
+            /* MOVED UP
+            This block was incorrectly commented with HTML comments, causing a JS syntax error.
+            It is now correctly removed.
+            */
+
 
             // Reset UI
             loading.classList.remove('hidden');
@@ -439,13 +601,16 @@
             genuinenessBar.classList.remove('bg-green-100', 'border-green-300', 'bg-yellow-100', 'border-yellow-300', 'bg-red-100', 'border-red-300');
             genuinenessText.classList.remove('text-green-800', 'text-yellow-800', 'text-red-800');
 
+            // --- NEW: Disable UI ---
+            setUiLoading(true);
+            // --- END: Disable UI ---
 
             try {
                 const systemPrompt = `You are a powerful web scraper and data extractor. Your goal is to analyze the provided URL and extract specific information.
 - Analyze the URL: ${currentUrl}
                 
-- First, perform a "Genuineness & Safety Check" for the website. Analyze if the site appears reputable (e.g., has contact info, clear purpose) or has red flags (e.g., excessive ads, suspicious claims).
-- Based on your check, decide on a genuineness level: GREEN (looks genuine), YELLOW (use caution), or RED (looks suspicious).
+- First, perform a "Genuineness & Safety Check" for the website based on the following context: **${contextInstruction}**
+- Based on this specific check, decide on a genuineness level: GREEN (looks genuine for this purpose), YELLOW (use caution for this purpose), or RED (looks suspicious for this purpose).
 - **CRITICAL:** Start your ENTIRE response with a single HTML comment in this exact format: \`<!-- GENUINENESS: [YOUR_DECISION] -->\` where [YOUR_DECISION] is GREEN, YELLOW, or RED.
 
 - Next, extract the main title of the page (e.g., from the <title> tag or main <h1>).
@@ -523,7 +688,7 @@
 
                     resultsDiv.classList.remove('hidden');
                     // Save to history
-                    saveToHistory(currentUrl, pageTitle, text, genuinenessLevel);
+                    saveToHistory(currentUrl, pageTitle, text, genuinenessLevel, selectedContext); // NEW: Save context
                     
                 } else {
                     // Check for safety ratings or other non-content responses
@@ -538,6 +703,9 @@
                 showError(error.message || "An unknown error occurred.");
             } finally {
                 loading.classList.add('hidden');
+                // --- NEW: Re-enable UI ---
+                setUiLoading(false);
+                // --- END: Re-enable UI ---
             }
         }
         
@@ -615,7 +783,7 @@
             
             // Save to history
             const pageTitle = "Arachne Web - Self Analysis";
-            saveToHistory(currentUrl, pageTitle, specialContent, 'GREEN');
+            saveToHistory(currentUrl, pageTitle, specialContent, 'GREEN', 'General'); // NEW: Save context
         }
 
         // --- New Function: Follow-up ---
@@ -626,6 +794,16 @@
             followUpLoading.classList.remove('hidden');
             followUpError.classList.add('hidden');
             followUpResult.classList.add('hidden');
+
+            // --- NEW: Disable UI ---
+            // We only disable the followUpButton here, as the main scrape button should still be usable
+            followUpButton.disabled = true;
+            // --- NEW: Change button text to show loading ---
+            followUpButton.innerHTML = `
+                <div class="small-spinner" style="width: 16px; height: 16px; border-width: 2px;"></div>
+                Asking...
+            `;
+            // --- END: Disable UI ---
 
             try {
                 const systemPrompt = `You are an AI assistant. The user previously analyzed this URL: ${currentUrl}.
@@ -682,6 +860,11 @@ User Question: ${question}`;
                 followUpError.classList.remove('hidden');
             } finally {
                 followUpLoading.classList.add('hidden');
+                // --- NEW: Re-enable UI ---
+                followUpButton.disabled = false;
+                // --- NEW: Restore button text ---
+                followUpButton.innerHTML = 'Ask';
+                // --- END: Re-enable UI ---
             }
         }
 
@@ -859,19 +1042,20 @@ User Question: ${question}`;
         }
         
         // --- New Function: Save to History ---
-       function saveToHistory(url, title, content, genuineness) {
+       function saveToHistory(url, title, content, genuineness, context) { // NEW: Added context
             // Check if this URL is already the most recent item
             if (history.length > 0 && history[0].url === url) {
                 // Update the existing item instead of duplicating
                 history[0].title = title;
                 history[0].content = content;
                 history[0].genuineness = genuineness;
+                history[0].context = context || 'General'; // NEW: Update context
             } else {
                 // Remove any older entry for this URL
                 history = history.filter(item => item.url !== url);
                 
                 // Add new item to the beginning
-                history.unshift({ url, title, content, genuineness });
+                history.unshift({ url, title, content, genuineness, context: context || 'General' }); // NEW: Add context
             }
             
             // Limit history to 10 items
@@ -897,6 +1081,17 @@ User Question: ${question}`;
             resultsContent.innerHTML = item.content;
             displayGenuinenessBar(item.genuineness);
             
+            // NEW: Set the context radio button
+            const contextToSelect = item.context || 'General'; // Default to General
+            const radioToSelect = document.querySelector(`input[name="analysisContext"][value="${contextToSelect}"]`);
+            if (radioToSelect) {
+                radioToSelect.checked = true;
+            } else {
+                // Fallback if context from history is no longer valid
+                document.getElementById('ctx-general').checked = true;
+            }
+            // END: Set context
+
             // Set context for follow-ups
             currentAnalysisContext = item.content;
             currentUrl = item.url;
