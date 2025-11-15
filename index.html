@@ -1023,9 +1023,14 @@ User Question: ${question}`;
             // Render in reverse chronological order (newest first)
             history.forEach((item, index) => {
                const li = document.createElement('li');
-               li.className = 'p-3 rounded-lg hover:bg-gray-100 cursor-pointer border border-gray-200';
+               // Make li a flex container to align title/URL and delete button
+               li.className = 'flex justify-between items-center p-3 rounded-lg hover:bg-gray-100 border border-gray-200 group';
+               
+               // Create a div for the text content to make it clickable
+               const textContent = document.createElement('div');
+               textContent.className = 'cursor-pointer flex-grow truncate';
                // Use click handler to load from the *original* history array index
-               li.onclick = () => loadFromHistory(index); 
+               textContent.onclick = () => loadFromHistory(index); 
                
                const titleSpan = document.createElement('span');
                titleSpan.className = 'block text-sm font-medium text-black truncate';
@@ -1035,8 +1040,20 @@ User Question: ${question}`;
                urlSpan.className = 'block text-xs text-gray-500 truncate';
                urlSpan.textContent = item.url;
                
-               li.appendChild(titleSpan);
-               li.appendChild(urlSpan);
+               textContent.appendChild(titleSpan);
+               textContent.appendChild(urlSpan);
+
+               // Create the delete button
+               const deleteButton = document.createElement('button');
+               deleteButton.className = 'ml-2 p-1 rounded-full text-gray-400 hover:bg-red-100 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0';
+               deleteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>`;
+               deleteButton.onclick = (e) => {
+                   e.stopPropagation(); // Stop click from bubbling to the li's click handler
+                   deleteHistoryItem(index);
+               };
+               
+               li.appendChild(textContent);
+               li.appendChild(deleteButton);
                historyList.appendChild(li);
             });
         }
@@ -1112,6 +1129,19 @@ User Question: ${question}`;
             localStorage.setItem('analysisHistory', JSON.stringify(history));
             renderHistory(); // Re-render to show new order
         }
+
+        // --- NEW Function: Delete Specific History Item ---
+        function deleteHistoryItem(index) {
+            // Remove the item at the specified index
+            history.splice(index, 1);
+            
+            // Update local storage
+            localStorage.setItem('analysisHistory', JSON.stringify(history));
+            
+            // Re-render the history list
+            renderHistory();
+        }
+        // --- END NEW Function ---
 
         // --- New Function: Clear History ---
         function clearHistory() {
