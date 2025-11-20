@@ -14,21 +14,13 @@
             font-family: 'Poppins', sans-serif;
         }
         
-        /* Custom spinner */
+        /* --- Animations & Micro-interactions --- */
+
+        /* Custom Spinner */
         .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            border-left-color: #111; /* Black */
-            animation: spin 1s ease infinite;
-        }
-        .small-spinner {
             border: 3px solid rgba(0, 0, 0, 0.1);
-            width: 20px;
-            height: 20px;
             border-radius: 50%;
-            border-left-color: #111; /* Black */
+            border-left-color: #111;
             animation: spin 1s ease infinite;
         }
         @keyframes spin {
@@ -36,102 +28,209 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Styling for generated content */
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .animate-shake {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes checkPop {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-check {
+            animation: checkPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* Delete Animation Classes */
+        .history-exit {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .history-exit-active {
+            opacity: 0;
+            transform: translateX(100%);
+            max-height: 0 !important;
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            border-width: 0 !important;
+        }
+
+        /* Toast Notification */
+        #toastContainer {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 50;
+            pointer-events: none;
+        }
+        #toastContainer.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* Styling for generated content (Markdown/HTML) */
         .gemini-content h2 {
             font-size: 1.25rem;
             font-weight: 600;
             margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            color: #111827;
+            border-bottom: 1px solid #f3f4f6;
+            padding-bottom: 0.25rem;
+        }
+        .gemini-content h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 1.25rem;
             margin-bottom: 0.5rem;
-            color: #111827; /* gray-900 */
+            color: #374151;
         }
         .gemini-content ul {
             list-style-type: disc;
             margin-left: 1.5rem;
             margin-bottom: 1rem;
-            color: #374151; /* gray-700 */
+            color: #374151;
         }
         .gemini-content li {
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.35rem;
         }
         .gemini-content p {
             margin-bottom: 1rem;
-            line-height: 1.6;
-            color: #374151; /* gray-700 */
+            line-height: 1.7;
+            color: #374151;
         }
         .gemini-content a {
-            color: #374151; /* gray-700 */
+            color: #2563eb;
             text-decoration: underline;
+            transition: color 0.2s;
+        }
+        .gemini-content a:hover {
+            color: #1d4ed8;
         }
         .gemini-content img {
             max-width: 100%;
             height: auto;
             border-radius: 0.5rem;
-            margin-top: 0.5rem;
-            margin-bottom: 1rem;
-            border: 1px solid #e5e7eb; /* gray-200 */
+            margin-top: 0.75rem;
+            margin-bottom: 1.25rem;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
-        
-        /* Fix for long URLs overflowing */
+
+        /* URL overflow fix */
         #sourcesList li, #sourcesList a {
             overflow-wrap: break-word;
             word-break: break-all;
         }
 
-        /* --- NEW: Styling for Context Buttons --- */
-        /* Style the label as a button, hide the actual radio input */
+        /* Context Button Styling */
         .context-button {
             display: inline-block;
-            padding: 0.5rem 0.75rem;
-            border-radius: 9999px; /* pill shape */
-            border: 1px solid #d1d5db; /* gray-300 */
-            background-color: #f9fafb; /* gray-50 */
-            color: #374151; /* gray-700 */
-            font-size: 0.875rem; /* text-sm */
+            padding: 0.5rem 0.85rem;
+            border-radius: 9999px;
+            border: 1px solid #d1d5db;
+            background-color: #f9fafb;
+            color: #374151;
+            font-size: 0.875rem;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s ease-in-out;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
         }
-        /* Style for the selected (checked) button */
+        /* Selected state */
         input[type="radio"]:checked + .context-button {
-            background-color: #111827; /* gray-900 */
-            color: #ffffff; /* white */
-            border-color: #111827; /* gray-900 */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            background-color: #111827;
+            color: #ffffff;
+            border-color: #111827;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transform: scale(1.02);
         }
-        /* Hover effect for non-selected buttons */
+        /* Active press state */
+        .context-button:active {
+            transform: scale(0.95);
+        }
+        /* Hover state */
         input[type="radio"]:not(:checked) + .context-button:hover {
-            border-color: #9ca3af; /* gray-400 */
+            border-color: #9ca3af;
+            background-color: #f3f4f6;
         }
-        /* --- End Context Button Styling --- */
 
     </style>
 </head>
-<body class="bg-white text-gray-900">
+<body class="bg-gray-50 text-gray-900 min-h-screen selection:bg-yellow-200 selection:text-black">
 
-    <div class="container mx-auto max-w-2xl p-4 md:p-8">
+    <!-- Toast Notification Element -->
+    <div id="toastContainer" class="bg-gray-900 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+        </svg>
+        <span id="toastMessage" class="text-sm font-medium">Action successful</span>
+    </div>
+
+    <div class="container mx-auto max-w-3xl p-4 md:p-8">
         
-        <header class="text-left mb-10 mt-8">
-            <h1 class="text-3xl md:text-4xl font-semibold text-black">Arachne Web</h1>
-            <p class="text-gray-600 mt-2">Your AI web weaver <b>by Undrstanding</b>, extracting info from any URL.</p>
+        <header class="text-left mb-8 mt-4 transition-transform duration-300 hover:-translate-y-1">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 bg-black rounded-lg flex items-center justify-center shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-[#FFD65A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                    </svg>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">Arachne Web</h1>
+            </div>
+            <p class="text-gray-500 ml-1">Your AI web weaver <b class="text-gray-900">by Undrstanding</b>, extracting info from any URL.</p>
         </header>
 
         <!-- Explainer Box -->
-         <div id="explainerBox" class="bg-[#abc2fe] border border-blue-300 text-grey p-4 rounded-lg mb-6 relative" role="alert">
-             <button id="closeExplainerButton" class="absolute top-2.5 right-2.5 text-black hover:text-gray-700 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+         <div id="explainerBox" class="bg-blue-50 border border-blue-100 p-5 rounded-xl mb-8 relative shadow-sm transition-all duration-300 hover:shadow-md" role="alert">
+             <button id="closeExplainerButton" class="absolute top-3 right-3 text-blue-400 hover:text-blue-600 hover:bg-blue-100 rounded-full p-1 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
              </button>
-             <p class="font-medium text-black">How this works</p>
-             <p class="pr-6">Directly scraping websites from a browser is blocked by security rules (CORS). This app uses the Gemini AI model with Google Search to analyze and extract info from the URL you provide.</p>
-         </div>
-        <!-- Input Form -->
-        <div class="bg-white p-6 rounded-lg border border-gray-200">
-            <div class="space-y-4">
-                <!-- NEW: Analysis Context -->
+             <div class="flex gap-3">
+                <div class="flex-shrink-0 mt-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Analysis Context</label>
-                    <div class="flex flex-wrap gap-2">
+                     <p class="font-semibold text-blue-900 mb-1">How this works</p>
+                     <p class="text-sm text-blue-800 leading-relaxed">Direct scraping from a browser is restricted. Arachne uses Gemini AI with Google Search to analyze and extract information securely from the URL you provide.</p>
+                </div>
+             </div>
+         </div>
+
+        <!-- Main Input Card -->
+        <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm transition-shadow duration-300 hover:shadow-md">
+            <div class="space-y-6">
+                
+                <!-- Analysis Context -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Analysis Context</label>
+                    <div class="flex flex-wrap gap-2" id="contextButtonsContainer">
                         <div>
                             <input type="radio" id="ctx-general" name="analysisContext" value="General" class="sr-only" checked>
                             <label for="ctx-general" class="context-button">General</label>
@@ -154,151 +253,204 @@
                         </div>
                     </div>
                 </div>
-                <!-- END: Analysis Context -->
 
+                <!-- URL Input -->
                 <div>
-                    <label for="url" class="block text-sm font-medium text-gray-700">Website URL</label>
-                    <input type="url" id="url" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-gray-300 focus:ring-0 focus:outline-none" placeholder="https://example.com">
-                </div>
-                
-                <!-- NEW: User-Guided Extraction -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">What to extract?</label>
-                    <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mt-2">
-                        <label class="flex items-center">
-                            <input type="checkbox" id="extractSummary" class="rounded border-gray-300 text-black shadow-sm focus:ring-black" checked>
-                            <span class="ml-2 text-sm text-gray-600">Summary</span>
-                        </label>
-                        <label class="flex items-center">
-                            <input type="checkbox" id="extractImages" class="rounded border-gray-300 text-black shadow-sm focus:ring-black" checked>
-                            <span class="ml-2 text-sm text-gray-600">Images</span>
-                        </label>
-                        <label class="flex items-center">
-                            <input type="checkbox" id="extractData" class="rounded border-gray-300 text-black shadow-sm focus:ring-black" checked>
-                            <span class="ml-2 text-sm text-gray-600">Key Data</span>
-                        </label>
-                        <!-- NEW: Tracking & Privacy Checkbox -->
-                        <label class="flex items-center">
-                            <input type="checkbox" id="extractTracking" class="rounded border-gray-300 text-black shadow-sm focus:ring-black" checked>
-                            <span class="ml-2 text-sm text-gray-600">Tracking & Privacy</span>
-                        </label>
-                        <!-- END: Tracking & Privacy Checkbox -->
+                    <label for="url" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Target URL</label>
+                    <div class="relative">
+                        <input type="url" id="url" class="block w-full rounded-xl border-gray-300 pl-4 pr-10 py-3 shadow-sm focus:border-black focus:ring-black transition-all duration-200 placeholder-gray-400" placeholder="https://example.com">
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                            </svg>
+                        </div>
                     </div>
                 </div>
-                <!-- END: User-Guided Extraction -->
                 
-                <!-- NEW: Analysis Context -->
-                <!-- MOVED TO TOP -->
-                <!-- END: Analysis Context -->
+                <!-- Custom Checkboxes -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Data Points</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <!-- Checkbox Item -->
+                        <label class="flex items-center p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors group select-none">
+                            <div class="relative flex items-center justify-center w-5 h-5 mr-3">
+                                <input type="checkbox" id="extractSummary" class="peer appearance-none w-5 h-5 border-2 border-gray-300 rounded transition-all duration-200 checked:bg-black checked:border-black group-hover:border-gray-400" checked>
+                                <svg class="absolute w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity duration-200 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                            <span class="text-sm font-medium text-gray-700">Summary</span>
+                        </label>
 
-                <button id="scrapeButton" class="w-full flex justify-center items-center gap-2 bg-[#FFD65A] text-black font-medium py-2 px-4 rounded-lg shadow-sm hover:bg-[#F9CC5E]  focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 transition duration-200 mt-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <!-- Checkbox Item -->
+                        <label class="flex items-center p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors group select-none">
+                            <div class="relative flex items-center justify-center w-5 h-5 mr-3">
+                                <input type="checkbox" id="extractImages" class="peer appearance-none w-5 h-5 border-2 border-gray-300 rounded transition-all duration-200 checked:bg-black checked:border-black group-hover:border-gray-400" checked>
+                                <svg class="absolute w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity duration-200 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                            <span class="text-sm font-medium text-gray-700">Images</span>
+                        </label>
+
+                        <!-- Checkbox Item -->
+                        <label class="flex items-center p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors group select-none">
+                            <div class="relative flex items-center justify-center w-5 h-5 mr-3">
+                                <input type="checkbox" id="extractData" class="peer appearance-none w-5 h-5 border-2 border-gray-300 rounded transition-all duration-200 checked:bg-black checked:border-black group-hover:border-gray-400" checked>
+                                <svg class="absolute w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity duration-200 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                            <span class="text-sm font-medium text-gray-700">Key Data</span>
+                        </label>
+
+                        <!-- Checkbox Item -->
+                        <label class="flex items-center p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors group select-none">
+                            <div class="relative flex items-center justify-center w-5 h-5 mr-3">
+                                <input type="checkbox" id="extractTracking" class="peer appearance-none w-5 h-5 border-2 border-gray-300 rounded transition-all duration-200 checked:bg-black checked:border-black group-hover:border-gray-400" checked>
+                                <svg class="absolute w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity duration-200 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                            <span class="text-sm font-medium text-gray-700">Tracking & Privacy</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button id="scrapeButton" class="w-full group flex justify-center items-center gap-2 bg-[#FFD65A] text-black font-semibold py-3.5 px-4 rounded-xl shadow-sm hover:bg-[#F9CC5E] hover:shadow-md active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 transition-all duration-200 mt-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform group-hover:scale-110" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
                     </svg>
-                    Analyze & Extract
+                    <span>Analyze & Extract</span>
                 </button>
             </div>
         </div>
 
         <!-- Loading Indicator -->
-        <div id="loading" class="hidden flex justify-center items-center my-8">
-            <div class="spinner"></div>
-            <p class="ml-3 text-gray-600">AI is analyzing the website... This may take a moment.</p>
+        <div id="loading" class="hidden flex flex-col justify-center items-center my-10 animate-fade-in">
+            <div class="spinner w-10 h-10 border-4"></div>
+            <p class="mt-4 text-gray-600 font-medium">Weaving the web... Analyzing content.</p>
         </div>
 
         <!-- Error Message Box -->
-        <div id="errorBox" class="hidden bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-lg relative my-6" role="alert">
-            <strong class="font-medium">Error:</strong>
-            <span class="block sm:inline" id="errorMessage"></span>
+        <div id="errorBox" class="hidden bg-red-50 border border-red-200 text-red-800 px-5 py-4 rounded-xl relative my-6 shadow-sm" role="alert">
+            <div class="flex items-start gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                </svg>
+                <div>
+                    <strong class="font-semibold block mb-1">Analysis Failed</strong>
+                    <span class="block text-sm opacity-90" id="errorMessage"></span>
+                </div>
+            </div>
         </div>
 
         <!-- Results Section -->
-        <div id="results" class="hidden bg-white p-6 mt-8 rounded-lg border border-gray-200">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2 sm:gap-0">
-                <h2 class="text-2xl font-semibold text-black">Extraction Results</h2>
-                <!-- NEW: Export & Copy Buttons -->
-                <div class="flex items-center gap-2">
-                    <button id="downloadButton" class="flex items-center gap-2 bg-gray-100 text-black text-sm font-medium py-1 px-3 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 transition duration-200">
+        <div id="results" class="hidden bg-white p-6 md:p-8 mt-8 rounded-2xl border border-gray-200 shadow-sm transition-all duration-500">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
+                <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Extraction Results
+                </h2>
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <button id="downloadButton" class="flex-1 sm:flex-none flex justify-center items-center gap-2 bg-gray-100 text-gray-700 text-sm font-medium py-2 px-4 rounded-lg hover:bg-gray-200 active:scale-95 transition-all duration-200">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                         </svg>
-                        Download (.txt)
+                        Download
                     </button>
-                    <button id="copyButton" class="flex items-center gap-2 bg-gray-100 text-black text-sm font-medium py-1 px-3 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 transition duration-200">
+                    <button id="copyButton" class="flex-1 sm:flex-none flex justify-center items-center gap-2 bg-gray-900 text-white text-sm font-medium py-2 px-4 rounded-lg hover:bg-gray-800 active:scale-95 transition-all duration-200">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-4 12h8a2 2 0 002-2V8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                         </svg>
-                        Copy Results
+                        Copy
                     </button>
                 </div>
             </div>
 
             <!-- Genuineness Bar -->
-            <div id="genuinenessBarContainer" class="hidden mb-4">
-                <div id="genuinenessBar" class="flex items-center gap-2 p-3 rounded-lg border">
-                    <span id="genuinenessText" class="font-medium text-sm"></span>
+            <div id="genuinenessBarContainer" class="hidden mb-6 animate-fade-in">
+                <div id="genuinenessBar" class="flex items-center gap-3 p-4 rounded-xl border transition-all duration-300">
+                    <div id="genuinenessIconWrapper" class="p-1.5 rounded-full bg-white bg-opacity-50">
+                        <!-- Icon injected via JS -->
+                    </div>
+                    <span id="genuinenessText" class="font-semibold text-sm md:text-base"></span>
                 </div>
             </div>
 
             <div id="resultsContent" class="prose max-w-none gemini-content">
-                <!-- AI-generated content will be injected here -->
+                <!-- AI-generated content -->
             </div>
             
-            <div id="sources" class="mt-6 border-t border-gray-200 pt-4">
-                <h3 class="text-lg font-semibold text-black">Sources Found:</h3>
-                <ul id="sourcesList" class="list-disc list-inside text-sm text-gray-600 mt-2">
-                    <!-- Source links will be injected here -->
+            <div id="sources" class="mt-8 border-t border-gray-100 pt-6">
+                <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wide mb-3">Sources Found</h3>
+                <ul id="sourcesList" class="space-y-1 text-sm text-blue-600">
+                    <!-- Links injected here -->
                 </ul>
             </div>
             
-            <!-- NEW: Follow-up Questions Section -->
-            <div id="followUpSection" class="hidden mt-6 border-t border-gray-200 pt-4">
-                <h3 class="text-lg font-semibold text-black mb-2">Follow-up Question</h3>
-                <p class="text-sm text-gray-600 mb-3">Ask a question based on the analysis above.</p>
+            <!-- Follow-up Questions Section -->
+            <div id="followUpSection" class="hidden mt-8 border-t border-gray-100 pt-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-2">Ask Follow-up</h3>
+                <p class="text-sm text-gray-500 mb-4">Need more details from the analysis? Ask below.</p>
                 <div class="flex gap-2">
-                    <input type="text" id="followUpInput" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-black focus:ring-black" placeholder="e.g., How many images were found?">
-                    <button id="followUpButton" class="flex justify-center items-center gap-2 bg-black text-white font-medium py-2 px-4 rounded-lg shadow-sm hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 transition duration-200">
+                    <div class="relative w-full">
+                        <input type="text" id="followUpInput" class="block w-full rounded-xl border-gray-300 pl-4 pr-10 py-3 shadow-sm focus:border-black focus:ring-black transition-all duration-200 placeholder-gray-400" placeholder="e.g., What is the return policy duration?">
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <button id="followUpButton" class="flex-shrink-0 bg-black text-white font-medium py-3 px-5 rounded-xl shadow-sm hover:bg-gray-800 active:scale-95 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 transition-all duration-200">
                         Ask
                     </button>
                 </div>
-                <div id="followUpLoading" class="hidden flex items-center mt-3">
-                    <div class="small-spinner"></div>
-                    <p class="ml-2 text-sm text-gray-600">AI is thinking...</p>
+                <div id="followUpLoading" class="hidden flex items-center mt-4 text-gray-600">
+                    <div class="spinner w-5 h-5 border-2 border-gray-300 border-l-black mr-3"></div>
+                    <span class="text-sm font-medium">Thinking...</span>
                 </div>
-                <div id="followUpError" class="hidden bg-red-50 border border-red-300 text-red-700 px-4 py-2 rounded-lg relative mt-3 text-sm"></div>
-                <div id="followUpResult" class="prose max-w-none gemini-content text-sm mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200"></div>
+                <div id="followUpError" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mt-4 text-sm animate-shake"></div>
+                <div id="followUpResult" class="hidden mt-4 p-4 bg-gray-50 rounded-xl border border-gray-200 text-sm prose max-w-none gemini-content animate-fade-in"></div>
             </div>
-            <!-- END: Follow-up Questions Section -->
         </div>
 
-        <!-- NEW: History Section -->
-        <div class="mt-8">
-            <div class="flex justify-between items-center">
-                <h2 class="text-2xl font-semibold text-black">History</h2>
-                <button id="clearHistoryButton" class="text-sm text-red-500 hover:text-red hover:underline">Clear History</button>
+        <!-- History Section -->
+        <div class="mt-12">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-900">Recent Analysis</h2>
+                <button id="clearHistoryButton" class="text-sm text-red-500 hover:text-red-700 font-medium hover:underline transition-colors">Clear All</button>
             </div>
-            <div id="historyContainer" class="mt-4 bg-white p-4 rounded-lg border border-gray-200 max-h-60 overflow-y-auto">
-                <ul id="historyList" class="space-y-3">
-                    <!-- History items will be injected here -->
+            <div id="historyContainer" class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                <ul id="historyList" class="divide-y divide-gray-100">
+                    <!-- History items injected here -->
                 </ul>
-                <p id="historyEmpty" class="text-gray-500 text-sm">No analysis history found.</p>
+                <div id="historyEmpty" class="p-8 text-center">
+                    <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <p class="text-gray-500 text-sm">No history yet. Analyze a URL to get started.</p>
+                </div>
             </div>
         </div>
-        <!-- END: History Section -->
 
     </div>
 
     <footer class="mt-16 mb-8 text-center">
-                <p class="text-2xl md:text-4xl font-bold text-gray-200">Made with <span class="text-red-500">❤️</span> by Undrstanding</p>
+        <p class="text-2xl md:text-4xl font-bold text-gray-200">Made with <span class="text-red-500">❤️</span> by Undrstanding</p>
     </footer>
 
-        <script>
-        // Global variables for new features
-        let currentAnalysisContext = ""; // For follow-up questions
-        let currentUrl = ""; // For follow-up and history
-        let history = []; // For history
+    <script>
+        // --- Global Variables ---
+        let currentAnalysisContext = "";
+        let currentUrl = "";
+        let history = [];
         
-        // DOM Elements
+        // --- DOM Elements ---
         const scrapeButton = document.getElementById('scrapeButton');
         const urlInput = document.getElementById('url');
         const loading = document.getElementById('loading');
@@ -308,26 +460,24 @@
         const errorBox = document.getElementById('errorBox');
         const errorMessage = document.getElementById('errorMessage');
         
-        // NEW: Explainer Box elements
         const explainerBox = document.getElementById('explainerBox');
         const closeExplainerButton = document.getElementById('closeExplainerButton');
         
-        // Genuineness bar
         const genuinenessBarContainer = document.getElementById('genuinenessBarContainer');
         const genuinenessBar = document.getElementById('genuinenessBar');
         const genuinenessText = document.getElementById('genuinenessText');
+        const genuinenessIconWrapper = document.getElementById('genuinenessIconWrapper');
         
-        // Extraction Toggles
         const extractSummary = document.getElementById('extractSummary');
         const extractImages = document.getElementById('extractImages');
         const extractData = document.getElementById('extractData');
-        const extractTracking = document.getElementById('extractTracking'); // NEW: Get tracking checkbox
+        const extractTracking = document.getElementById('extractTracking');
 
-        // Export/Copy
         const copyButton = document.getElementById('copyButton');
         const downloadButton = document.getElementById('downloadButton');
+        const toastContainer = document.getElementById('toastContainer');
+        const toastMessage = document.getElementById('toastMessage');
 
-        // Follow-up
         const followUpSection = document.getElementById('followUpSection');
         const followUpInput = document.getElementById('followUpInput');
         const followUpButton = document.getElementById('followUpButton');
@@ -335,15 +485,12 @@
         const followUpError = document.getElementById('followUpError');
         const followUpResult = document.getElementById('followUpResult');
         
-        // History
         const historyContainer = document.getElementById('historyContainer');
         const historyList = document.getElementById('historyList');
         const historyEmpty = document.getElementById('historyEmpty');
         const clearHistoryButton = document.getElementById('clearHistoryButton');
         
-        // NEW: Context Button Container
-        const contextButtonContainer = document.querySelector('input[name="analysisContext"]').closest('div.flex');
-
+        const contextButtonContainer = document.getElementById('contextButtonsContainer');
 
         // --- API Configuration ---
         // The API key is now stored securely on the backend server
@@ -351,317 +498,198 @@
         const apiUrl = '/api/generate-content';
         // --- End of API Configuration ---
 
-        // Helper function to normalize URLs for comparison
+        // --- Event Listeners ---
+        document.addEventListener('DOMContentLoaded', loadHistory);
+        scrapeButton.addEventListener('click', handleScrape);
+        copyButton.addEventListener('click', () => {
+            copyResultsToClipboard();
+            showToast("Results copied to clipboard");
+        });
+        downloadButton.addEventListener('click', downloadResultsAsTxt);
+        followUpButton.addEventListener('click', handleFollowUp);
+        clearHistoryButton.addEventListener('click', clearHistory);
+        
+        if (closeExplainerButton) {
+            closeExplainerButton.addEventListener('click', () => {
+                explainerBox.style.opacity = '0';
+                setTimeout(() => explainerBox.classList.add('hidden'), 300);
+            });
+        }
+
+        // --- Helper Functions ---
+
         function normalizeUrl(url) {
             try {
-                // Trim and strip common copy/paste artifacts
                 url = (url || '').trim();
-                // Remove surrounding quotes
                 if ((url.startsWith('"') && url.endsWith('"')) || (url.startsWith("'") && url.endsWith("'"))) {
                     url = url.slice(1, -1);
                 }
-                // Remove leading '@' or similar mention prefixes
-                if (url.startsWith('@')) {
-                    url = url.slice(1);
-                }
-                // Add protocol if missing
-                if (!url.startsWith('http://') && !url.startsWith('https://')) {
-                    url = 'https://' + url;
-                }
-
+                if (url.startsWith('@')) url = url.slice(1);
+                if (!url.startsWith('http://') && !url.startsWith('https://')) url = 'https://' + url;
                 const urlObj = new URL(url);
-                // Normalize host by stripping leading 'www.'
-                const host = urlObj.host.toLowerCase().startsWith('www.') ? urlObj.host.toLowerCase().slice(4) : urlObj.host.toLowerCase();
-                // Return comparable tuple: host (includes port)
-                return host;
+                return urlObj.host.toLowerCase().startsWith('www.') ? urlObj.host.toLowerCase().slice(4) : urlObj.host.toLowerCase();
             } catch (e) {
                 return (url || '').toLowerCase();
             }
         }
 
-        // NEW: Helper function for basic URL validation
         function isValidUrl(string) {
-            if (!string || string.trim() === '') {
-                return false;
-            }
-            
+            if (!string || string.trim() === '') return false;
             let urlToTest = string.trim();
-
-            // NEW: Add a check for spaces.
-            // While URLs can technically have spaces (in paths, properly encoded),
-            // a user pasting a URL from the address bar or a simple link
-            // will almost never have a space. This catches "google.com some other text"
-            // and the user's example of pasting a sentence.
-            if (urlToTest.includes(' ')) {
-                return false;
-            }
-            // END: New check
-
-            // Add protocol if missing for the sake of the URL constructor
-            if (!urlToTest.startsWith('http://') && !urlToTest.startsWith('https://')) {
-                urlToTest = 'https://' + urlToTest;
-            }
-            
+            if (urlToTest.includes(' ')) return false;
+            if (!urlToTest.startsWith('http://') && !urlToTest.startsWith('https://')) urlToTest = 'https://' + urlToTest;
             try {
                 const urlObj = new URL(urlToTest);
-                // Basic check: does it have a hostname that contains a dot?
-                // This filters out things like "https://invalid" or "http://test"
                 return urlObj.hostname && urlObj.hostname.includes('.');
             } catch (_) {
-                return false; // Failed to construct URL object
+                return false;
             }
         }
 
-        // Check if URL is the app itself
         function isSelfUrl(url) {
             const currentHostRaw = (() => {
                 try { return new URL(window.location.origin).host.toLowerCase(); } catch { return window.location.host.toLowerCase(); }
             })();
             const currentHost = currentHostRaw.startsWith('www.') ? currentHostRaw.slice(4) : currentHostRaw;
-
             const analyzedHostRaw = normalizeUrl(url);
             const analyzedHost = analyzedHostRaw.startsWith('www.') ? analyzedHostRaw.slice(4) : analyzedHostRaw;
-
-            // Known aliases for the deployed app (add more if you add custom domains)
-            const aliases = [
-                currentHost,
-                'undrstandingarachne.vercel.app',
-                // Add any other known deployment hosts here
-            ];
-
-            // Exact host match or subdomain of any alias should count as self
+            const aliases = [currentHost, 'undrstandingarachne.vercel.app'];
             return aliases.some(alias => {
-                if (!alias) return false; // Skip empty aliases
+                if (!alias) return false;
                 if (analyzedHost === alias) return true;
                 return analyzedHost.endsWith('.' + alias);
             });
         }
 
-        // --- Event Listeners ---
-        document.addEventListener('DOMContentLoaded', loadHistory); // Load history on page load
-        scrapeButton.addEventListener('click', handleScrape);
-        copyButton.addEventListener('click', copyResultsToClipboard);
-        downloadButton.addEventListener('click', downloadResultsAsTxt);
-        followUpButton.addEventListener('click', handleFollowUp);
-        clearHistoryButton.addEventListener('click', clearHistory);
-        
-        // NEW: Explainer box close listener
-        if (closeExplainerButton) {
-            closeExplainerButton.addEventListener('click', () => {
-                if (explainerBox) {
-                    explainerBox.classList.add('hidden');
-                }
-            });
+        function showToast(message) {
+            toastMessage.textContent = message;
+            toastContainer.classList.add('show');
+            setTimeout(() => {
+                toastContainer.classList.remove('show');
+            }, 3000);
         }
-        // --- End Event Listeners ---
 
-        // --- NEW: Helper function to toggle UI disabled state ---
         function setUiLoading(isLoading) {
             if (isLoading) {
-                // Disable buttons
                 scrapeButton.disabled = true;
                 followUpButton.disabled = true;
                 clearHistoryButton.disabled = true;
-
-                // Update scrape button text
+                
+                // Button Spinner
                 scrapeButton.innerHTML = `
-                    <div class="spinner" style="width: 20px; height: 20px; border-width: 3px;"></div>
+                    <div class="spinner w-5 h-5 border-2 border-gray-800 border-l-transparent"></div>
                     Analyzing...
                 `;
+                scrapeButton.classList.add('opacity-75', 'cursor-not-allowed');
                 
-                // NEW: Disable context buttons
                 contextButtonContainer.classList.add('opacity-50', 'pointer-events-none');
                 document.querySelectorAll('input[name="analysisContext"]').forEach(input => input.disabled = true);
-
-                // NEW: Disable extraction checkboxes
-                extractSummary.disabled = true;
-                extractImages.disabled = true;
-                extractData.disabled = true;
-                extractTracking.disabled = true;
+                
+                // Disable Checkboxes
+                [extractSummary, extractImages, extractData, extractTracking].forEach(el => el.disabled = true);
+                document.querySelectorAll('input[type="checkbox"]').forEach(el => el.parentElement.parentElement.classList.add('opacity-60'));
 
             } else {
-                // Enable buttons
                 scrapeButton.disabled = false;
                 followUpButton.disabled = false;
                 clearHistoryButton.disabled = false;
-
-                // Restore scrape button text
+                
                 scrapeButton.innerHTML = `
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform group-hover:scale-110" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
                     </svg>
-                    Analyze & Extract
+                    <span>Analyze & Extract</span>
                 `;
+                scrapeButton.classList.remove('opacity-75', 'cursor-not-allowed');
                 
-                // Enable history list interaction
-                historyList.classList.remove('opacity-50', 'pointer-events-none');
-
-                // NEW: Enable context buttons
                 contextButtonContainer.classList.remove('opacity-50', 'pointer-events-none');
                 document.querySelectorAll('input[name="analysisContext"]').forEach(input => input.disabled = false);
-
-                // NEW: Enable extraction checkboxes
-                extractSummary.disabled = false;
-                extractImages.disabled = false;
-                extractData.disabled = false;
-                extractTracking.disabled = false;
+                
+                [extractSummary, extractImages, extractData, extractTracking].forEach(el => el.disabled = false);
+                document.querySelectorAll('input[type="checkbox"]').forEach(el => el.parentElement.parentElement.classList.remove('opacity-60'));
             }
         }
-        // --- END: Helper function ---
 
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorBox.classList.remove('hidden');
+            errorBox.classList.add('animate-shake');
+            setTimeout(() => errorBox.classList.remove('animate-shake'), 500);
+        }
+
+        // --- Main Logic ---
 
         async function handleScrape() {
-            currentUrl = urlInput.value.trim(); // Also trim whitespace
-            urlInput.value = currentUrl; // Update input field with trimmed value
+            currentUrl = urlInput.value.trim();
+            urlInput.value = currentUrl;
 
             if (!currentUrl) {
-                showError("Please fill in the URL field.");
+                showError("Please enter a URL to analyze.");
                 return;
             }
 
-            // NEW: Add URL validation
             if (!isValidUrl(currentUrl)) {
-                showError("Please enter a valid URL (e.g., example.com or https://example.com).");
+                showError("Please enter a valid URL (e.g., example.com).");
                 return;
             }
             
-            // Add protocol if missing (isValidUrl checks this, but we need it for the API call)
             if (!currentUrl.startsWith('http://') && !currentUrl.startsWith('https://')) {
                 currentUrl = 'https://' + currentUrl;
-                urlInput.value = currentUrl; // Update the input field
+                urlInput.value = currentUrl;
             }
-            // END: Add URL validation
 
-            // Check if user is trying to analyze the app itself
             if (isSelfUrl(currentUrl)) {
                 handleSelfAnalysis();
                 return;
             }
 
-            // --- NEW: Get Analysis Context (Moved Up) ---
+            // Prepare Context
             const selectedContext = document.querySelector('input[name="analysisContext"]:checked').value || 'General';
             let contextInstruction = "Analyze the site's general purpose and trustworthiness.";
             
-            if (selectedContext === 'Job/Internship') {
-                contextInstruction = "Analyze if this site appears to be a legitimate place for job applications or internships. Look for red flags specific to job scams (e.g., asking for money, vague job descriptions, no company info).";
-            } else if (selectedContext === 'Payments') {
-                contextInstruction = "Analyze if this site appears to be secure and trustworthy for making payments. Look for HTTPS, clear privacy policies, and standard, non-suspicious checkout procedures.";
-            } else if (selectedContext === 'E-commerce') {
-                contextInstruction = "Analyze if this site appears to be a legitimate e-commerce store. Look for product details, valid contact info, return policies, and secure checkout indicators.";
-            } else if (selectedContext === 'Travel') {
-                contextInstruction = "Analyze if this site appears to be a reliable and legitimate platform for booking travel (flights, hotels, etc.). Check for real reviews, secure payment options, and clear booking details.";
-            }
-            // --- END: Get Analysis Context ---
+            if (selectedContext === 'Job/Internship') contextInstruction = "Analyze if this site appears to be a legitimate place for job applications. Look for red flags.";
+            else if (selectedContext === 'Payments') contextInstruction = "Analyze if this site appears secure for payments. Look for SSL and policies.";
+            else if (selectedContext === 'E-commerce') contextInstruction = "Analyze if this is a legitimate store. Look for policies, contact info, and products.";
+            else if (selectedContext === 'Travel') contextInstruction = "Analyze if this site is reliable for booking travel.";
 
-            // --- Build Extraction Task List ---
+            // Prepare Tasks
             let extractionTasks = [];
-            
-            if (extractSummary.checked) {
-                // NEW: Make summary context-aware
-                if (selectedContext === 'Job/Internship') {
-                    extractionTasks.push("Provide a concise summary, focusing on its legitimacy and features for job applications or internships.");
-                } else if (selectedContext === 'Payments') {
-                    extractionTasks.push("Provide a concise summary, focusing on its security features and apparent trustworthiness for making payments.");
-                } else if (selectedContext === 'E-commerce') {
-                    extractionTasks.push("Provide a concise summary, focusing on it as an e-commerce store (product variety, policies, checkout process).");
-                } else if (selectedContext === 'Travel') {
-                    extractionTasks.push("Provide a concise summary, focusing on its reliability and features for booking travel.");
-                } else {
-                    // General context
-                    extractionTasks.push("Provide a concise summary of the website's main purpose and content.");
-                }
-            }
+            if (extractSummary.checked) extractionTasks.push(`Provide a concise summary focused on ${selectedContext} context.`);
+            if (extractImages.checked) extractionTasks.push("Extract key images with direct links.");
+            if (extractData.checked) extractionTasks.push(`Extract data points relevant to ${selectedContext}.`);
+            if (extractTracking.checked) extractionTasks.push("Investigate privacy policy and tracking. Include a specific 'Tracking & Privacy' section with a summary box.");
 
-            if (extractImages.checked) extractionTasks.push("Extract all key images, providing both a preview and a direct link for each.");
-            
-            if (extractData.checked) {
-                // NEW: Make data extraction context-aware
-                if (selectedContext === 'Job/Internship') {
-                    extractionTasks.push("Extract key data points relevant to jobs, such as 'Careers' links, company info, or job listing examples.");
-                } else if (selectedContext === 'Payments') {
-                    extractionTasks.push("Extract key data points relevant to payments, such as 'Accepted Payment Methods', 'Security' or 'PCI Compliance' info, or trust badges.");
-                } else if (selectedContext === 'E-commerce') { // <-- FIX: Corrected typo 'selectedVontent'
-                    extractionTasks.push("Extract key data points relevant to e-commerce, such as 'Return Policy', 'Shipping Info', product categories, or 'Contact Us' details.");
-                } else if (selectedContext === 'Travel') { // <-- FIX: Added missing 'Travel' context
-                    extractionTasks.push("Extract key data points relevant to travel booking, such as 'Destinations', 'Booking Types' (flights, hotels), or 'Customer Support' info.");
-                } else {
-                    // General context
-                    extractionTasks.push("Extract any key data points, headings, or lists from the main content.");
-                }
-            }
-            
-            // NEW: Add Tracking task
-            if (extractTracking.checked) {
-                extractionTasks.push(`
-Investigate the website's privacy policy and any public user/security reports regarding its tracking practices.
-Format this entire section starting with an \`<h2>Tracking & Privacy Analysis</h2>\`.
-After the heading, create a summary box using this exact HTML structure:
-\`<div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.75rem 1rem; margin-bottom: 1rem;">
-<p style="font-weight: 600; color: #111827; margin-bottom: 0.5rem;">Privacy Overview:</p>
-<p style="margin-bottom: 0.5rem;">[Your one-paragraph summary of the privacy situation goes here.]</p>
-<h4 style="font-weight: 600; color: #111827; margin-top: 0.75rem; margin-bottom: 0.5rem;">Potential Data Collection:</h4>
-<ul>
-  <li>[Tracked Item 1]</li>
-  <li>[Tracked Item 2]</li>
-  <li>[etc...]</li>
-</ul>
-</div>\`
-If no specific tracking info is found, state that clearly within the summary and list.
-`);
-            }
-            // END: Add Tracking task
-            
             if (extractionTasks.length === 0) {
-                showError("Please select at least one item to extract.");
+                showError("Select at least one item to extract.");
                 return;
             }
             const taskString = extractionTasks.join("\n- ");
-            // --- End Build Extraction Task List ---
-
-            /* MOVED UP
-            This block was incorrectly commented with HTML comments, causing a JS syntax error.
-            It is now correctly removed.
-            */
-
 
             // Reset UI
             loading.classList.remove('hidden');
             resultsDiv.classList.add('hidden');
+            resultsDiv.classList.remove('animate-fade-in'); // Reset animation
             errorBox.classList.add('hidden');
             followUpSection.classList.add('hidden');
-            followUpResult.classList.add('hidden');
-            followUpError.classList.add('hidden');
             resultsContent.innerHTML = '';
             sourcesList.innerHTML = '';
-            copyButton.textContent = 'Copy Results';
             genuinenessBarContainer.classList.add('hidden');
-            genuinenessBar.classList.remove('bg-green-100', 'border-green-300', 'bg-yellow-100', 'border-yellow-300', 'bg-red-100', 'border-red-300');
-            genuinenessText.classList.remove('text-green-800', 'text-yellow-800', 'text-red-800');
-
-            // --- NEW: Disable UI ---
             setUiLoading(true);
-            // --- END: Disable UI ---
 
             try {
-                const systemPrompt = `You are a powerful web scraper and data extractor. Your goal is to analyze the provided URL and extract specific information.
-- Analyze the URL: ${currentUrl}
-                
-- First, perform a "Genuineness & Safety Check" for the website based on the following context: **${contextInstruction}**
-- Based on this specific check, decide on a genuineness level: GREEN (looks genuine for this purpose), YELLOW (use caution for this purpose), or RED (looks suspicious for this purpose).
-- **CRITICAL:** Start your ENTIRE response with a single HTML comment in this exact format: \`<!-- GENUINENESS: [YOUR_DECISION] -->\` where [YOUR_DECISION] is GREEN, YELLOW, or RED.
+                const systemPrompt = `You are a web scraper. Analyze: ${currentUrl}
+                - Context: ${contextInstruction}
+                - First, decide genuineness: GREEN (Safe), YELLOW (Caution), RED (Suspicious).
+                - Start response with comment: \`<!-- GENUINENESS: [DECISION] -->\`
+                - Then extract page title: \`<!-- TITLE: [Page Title] -->\`
+                - Then perform tasks:
+                - ${taskString}
+                - Use HTML (h2, p, ul, li). Images: <img src="..." style="max-height: 250px; border-radius: 0.5rem;" onerror="this.style.display='none'">.
+                - NO <html> or <body> tags.`;
 
-- Next, extract the main title of the page (e.g., from the <title> tag or main <h1>).
-- **CRITICAL:** After the genuineness comment, add a second HTML comment in this exact format: \`<!-- TITLE: [Page Title] -->\` where [Page Title] is the title you found.
-                
-- After those comments, perform ONLY the following tasks:
-- ${taskString}
-                
-- Use this exact format for images: \`<img src="image-url.jpg" alt="Image preview" referrerpolicy="no-referrer" style="max-height: 250px; border-radius: 0.5rem; border: 1px solid #e5e7eb;" onerror="this.outerHTML='<div style=\\'padding: 1rem; border: 1px dashed #e5e7eb; border-radius: 0.5rem; color: #6b7280; font-style: italic;\\'>Image preview failed to load (this is common due to browser security).</div>';"><br><a href="image-url.jpg" target="_blank" rel="noopener noreferrer" style="text-decoration: underline; color: #374151;">Open Image in New Tab</a><br><br>\`
-- Format your response in clean HTML using headings (h2), paragraphs (p), and lists (ul, li). Do not include \`<html>\` or \`<body>\` tags.
-- DO NOT mention genuineness in the visible HTML report.`;
+                const userQuery = `Analyze ${currentUrl}`;
 
-                const userQuery = `Analyze ${currentUrl} for the following: ${taskString}`;
-
+                // Using direct fetch to Gemini API (as per instructions, assuming proxy/env is handled or key is provided)
                 const payload = {
                     contents: [{ parts: [{ text: userQuery }] }],
                     tools: [{ "google_search": {} }],
@@ -684,146 +712,77 @@ If no specific tracking info is found, state that clearly within the summary and
 
                 if (candidate && candidate.content?.parts?.[0]?.text) {
                     let text = candidate.content.parts[0].text;
-                    let genuinenessLevel = "YELLOW"; // Default
-                    let pageTitle = currentUrl; // Default to URL
+                    let genuinenessLevel = "YELLOW";
+                    let pageTitle = currentUrl;
 
-                    // --- Genuineness Check ---
-                    const genuinenessRegex = /<!-- GENUINENESS: (GREEN|YELLOW|RED) -->/;
-                    const match = text.match(genuinenessRegex);
-                    
-                    if (match && match[1]) {
-                        genuinenessLevel = match[1];
-                        text = text.replace(genuinenessRegex, '').trim(); // Remove comment
-                        displayGenuinenessBar(genuinenessLevel);
+                    // Extract Metadata
+                    const genMatch = text.match(/<!-- GENUINENESS: (GREEN|YELLOW|RED) -->/);
+                    if (genMatch) {
+                        genuinenessLevel = genMatch[1];
+                        text = text.replace(genMatch[0], '');
                     }
-                    // --- End Genuineness Check ---
-
-                    // --- Page Title Check ---
-                    const titleRegex = /<!-- TITLE: (.*?) -->/;
-                    const titleMatch = text.match(titleRegex);
-                    if (titleMatch && titleMatch[1]) {
+                    const titleMatch = text.match(/<!-- TITLE: (.*?) -->/);
+                    if (titleMatch) {
                         pageTitle = titleMatch[1].trim();
-                        text = text.replace(titleRegex, '').trim(); // Remove comment
+                        text = text.replace(titleMatch[0], '');
                     }
-                    // --- End Page Title Check ---
 
                     resultsContent.innerHTML = text;
-                    currentAnalysisContext = text; // Save for follow-up
-                    followUpSection.classList.remove('hidden'); // Show follow-up
-
-                    // Process and display grounding sources
-                    const groundingMetadata = candidate.groundingMetadata;
-                    if (groundingMetadata && groundingMetadata.groundingAttributions) {
-                        const sources = groundingMetadata.groundingAttributions
-                            .map(attr => attr.web?.uri).filter(uri => uri);
-                        if (!sources.includes(currentUrl)) sources.unshift(currentUrl);
-                        sourcesList.innerHTML = [...new Set(sources)] // Ensure unique sources
-                            .map(uri => `<li><a href="${uri}" target="_blank" rel="noopener noreferrer" class="text-gray-700 hover:underline">${uri}</a></li>`).join('');
-                    } else {
-                        sourcesList.innerHTML = `<li><a href="${currentUrl}" target="_blank" rel="noopener noreferrer" class="text-gray-700 hover:underline">${currentUrl}</a></li>`;
-                    }
+                    currentAnalysisContext = text;
+                    displayGenuinenessBar(genuinenessLevel);
+                    
+                    // Sources
+                    const sources = candidate.groundingMetadata?.groundingAttributions?.map(a => a.web?.uri).filter(u => u) || [currentUrl];
+                    sourcesList.innerHTML = [...new Set(sources)].map(uri => 
+                        `<li><a href="${uri}" target="_blank" rel="noopener noreferrer" class="hover:underline">${uri}</a></li>`
+                    ).join('');
 
                     resultsDiv.classList.remove('hidden');
-                    // Save to history
-                    saveToHistory(currentUrl, pageTitle, text, genuinenessLevel, selectedContext); // NEW: Save context
+                    // Trigger Reflow for animation
+                    void resultsDiv.offsetWidth;
+                    resultsDiv.classList.add('animate-fade-in');
                     
+                    followUpSection.classList.remove('hidden');
+                    saveToHistory(currentUrl, pageTitle, text, genuinenessLevel, selectedContext);
                 } else {
-                    // Check for safety ratings or other non-content responses
-                    if (candidate?.finishReason === 'SAFETY') {
-                        throw new Error("Analysis blocked: The request or response was flagged for safety reasons.");
-                    }
-                    throw new Error("No valid content returned from the AI model.");
+                    throw new Error("No content returned.");
                 }
 
             } catch (error) {
-                console.error("Scraping failed:", error);
-                showError(error.message || "An unknown error occurred.");
+                console.error(error);
+                showError(error.message || "Analysis failed.");
             } finally {
                 loading.classList.add('hidden');
-                // --- NEW: Re-enable UI ---
                 setUiLoading(false);
-                // --- END: Re-enable UI ---
             }
         }
-        
-        function displayGenuinenessBar(genuinenessLevel) {
-            // Reset classes
-            genuinenessBar.classList.remove('bg-green-100', 'border-green-300', 'bg-yellow-100', 'border-yellow-300', 'bg-red-100', 'border-red-300');
-            genuinenessText.classList.remove('text-green-800', 'text-yellow-800', 'text-red-800');
 
-            if (genuinenessLevel === 'GREEN') {
-                genuinenessBar.classList.add('bg-green-100', 'border', 'border-green-300');
-                genuinenessText.classList.add('text-green-800');
-                genuinenessText.textContent = 'Genuineness Check: Appears Genuine';
-            } else if (genuinenessLevel === 'YELLOW') {
-                genuinenessBar.classList.add('bg-yellow-100', 'border', 'border-yellow-300');
-                genuinenessText.classList.add('text-yellow-800');
-                genuinenessText.textContent = 'Genuineness Check: Use Caution';
-            } else if (genuinenessLevel === 'RED') {
-                genuinenessBar.classList.add('bg-red-100', 'border', 'border-red-300');
-                genuinenessText.classList.add('text-red-800');
-                genuinenessText.textContent = 'Genuineness Check: Appears Suspicious';
-            }
-            genuinenessBarContainer.classList.remove('hidden');
-        }
-
-        function showError(message) {
-            errorMessage.textContent = message;
-            errorBox.classList.remove('hidden');
-        }
-
-        // --- Special Function: Handle Self-Analysis ---
         function handleSelfAnalysis() {
-            // Reset UI (same as regular flow)
             loading.classList.add('hidden');
             errorBox.classList.add('hidden');
-            followUpResult.classList.add('hidden');
-            followUpError.classList.add('hidden');
-            copyButton.textContent = 'Copy Results';
             
-            // Clear previous results
-            resultsContent.innerHTML = '';
-            sourcesList.innerHTML = '';
-            
-            // Reset genuineness bar classes
-            genuinenessBar.classList.remove('bg-green-100', 'border-green-300', 'bg-yellow-100', 'border-yellow-300', 'bg-red-100', 'border-red-300');
-            genuinenessText.classList.remove('text-green-800', 'text-yellow-800', 'text-red-800');
-            
-            // Set genuineness to GREEN with special message
-            genuinenessBar.classList.add('bg-green-100', 'border', 'border-green-300');
-            genuinenessText.classList.add('text-green-800');
-            genuinenessText.textContent = 'Genuineness Check: 100% Genuine (Source: Me, obviously.)';
-            genuinenessBarContainer.classList.remove('hidden');
-            
-            // Create special response content
             const specialContent = `
-                <h2>Genuineness Check:</h2>
-                <p><strong>100% Genuine</strong> (Source: Me, obviously.)</p>
-                <p style="color: #ef4444; font-style: italic;">Error: Too genuine to calculate.</p>
-                <p style="font-weight: 600;">Are you kidding? I'm the gold standard.</p>
-                
-                <h2>Summary:</h2>
-                <p>"You're looking at it.</p>
-                <p>It's me. Hi. I'm the app, it's me. I'm the tool that tells you if other sites are legit. Since you asked, yes, I'm legit.</p>
-                <p><strong>Now stop admiring me and go find a questionable URL!"</strong></p>
+                <h2>Self-Diagnostic Result</h2>
+                <p><strong>Status:</strong> 100% Operational & Genuine.</p>
+                <p>I am Arachne, your extraction tool. The recursive analysis indicates I am functioning perfectly.</p>
+                <h3>Summary</h3>
+                <ul><li>Purpose: Web Analysis</li><li>Status: Online</li><li>Mood: Efficient</li></ul>
             `;
             
             resultsContent.innerHTML = specialContent;
             currentAnalysisContext = specialContent;
+            displayGenuinenessBar('GREEN');
+            genuinenessText.textContent = "Genuineness: 100% (It's me!)";
             
-            // Set sources to just the current URL
-            sourcesList.innerHTML = `<li><a href="${currentUrl}" target="_blank" rel="noopener noreferrer" class="text-gray-700 hover:underline">${currentUrl}</a></li>`;
+            sourcesList.innerHTML = `<li><a href="${currentUrl}" class="hover:underline">${currentUrl}</a></li>`;
             
-            // Show results and follow-up section
             resultsDiv.classList.remove('hidden');
+            resultsDiv.classList.add('animate-fade-in');
             followUpSection.classList.remove('hidden');
             
-            // Save to history
-            const pageTitle = "Arachne Web - Self Analysis";
-            saveToHistory(currentUrl, pageTitle, specialContent, 'GREEN', 'General'); // NEW: Save context
+            saveToHistory(currentUrl, "Arachne Self-Check", specialContent, 'GREEN', 'General');
         }
 
-        // --- New Function: Follow-up ---
         async function handleFollowUp() {
             const question = followUpInput.value;
             if (!question) return;
@@ -831,33 +790,13 @@ If no specific tracking info is found, state that clearly within the summary and
             followUpLoading.classList.remove('hidden');
             followUpError.classList.add('hidden');
             followUpResult.classList.add('hidden');
-
-            // --- NEW: Disable UI ---
-            // We only disable the followUpButton here, as the main scrape button should still be usable
             followUpButton.disabled = true;
-            // --- NEW: Change button text to show loading ---
-            followUpButton.innerHTML = `
-                <div class="small-spinner" style="width: 16px; height: 16px; border-width: 2px;"></div>
-                Asking...
-            `;
-            // --- END: Disable UI ---
 
             try {
-                const systemPrompt = `You are an AI assistant. The user previously analyzed this URL: ${currentUrl}.
-The results of that analysis were:
-<context>
-${currentAnalysisContext}
-</context>
+                const systemPrompt = `Context:\n${currentAnalysisContext}\n\nAnswer based on context: ${question}\nUse HTML fragments.`;
                 
-Now, please answer the user's follow-up question based *only* on that context.
-Format your response in clean HTML using headings (h2/h3), paragraphs (p), and unordered lists (ul > li). 
-Do not include <html> or <body> tags. Keep it concise and structured. 
-Avoid phrases like "Based on the context provided"; instead, present the answer directly.
-User Question: ${question}`;
-
                 const payload = {
                     contents: [{ parts: [{ text: systemPrompt }] }],
-                    // NO grounding tool, as we want it to answer from context
                 };
 
                 const response = await fetchWithBackoff(apiUrl, {
@@ -872,319 +811,197 @@ User Question: ${question}`;
                 }
 
                 const result = await response.json();
-                let text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
 
                 if (text) {
-                    // If model already returned HTML, render it as-is; else structure markdown/plain text
-                    if (looksLikeHtml(text)) {
-                        followUpResult.innerHTML = text;
-                    } else {
-                        const structured = toStructuredHtml(text);
-                        followUpResult.innerHTML = structured;
-                    }
+                    followUpResult.innerHTML = text;
                     followUpResult.classList.remove('hidden');
-                    followUpInput.value = ''; // Clear input on success
+                    followUpInput.value = '';
                 } else {
-                    if (result.candidates?.[0]?.finishReason === 'SAFETY') {
-                        throw new Error("Follow-up blocked: The request or response was flagged for safety reasons.");
-                    }
-                    throw new Error("No valid follow-up content returned.");
+                    throw new Error("No answer generated.");
                 }
-
-            } catch (error) {
-                console.error("Follow-up failed:", error);
-                followUpError.textContent = error.message || "An unknown error occurred.";
+            } catch (e) {
+                followUpError.textContent = e.message;
                 followUpError.classList.remove('hidden');
             } finally {
                 followUpLoading.classList.add('hidden');
-                // --- NEW: Re-enable UI ---
                 followUpButton.disabled = false;
-                // --- NEW: Restore button text ---
-                followUpButton.innerHTML = 'Ask';
-                // --- END: Re-enable UI ---
             }
         }
 
-        // --- Helper: Detect simple HTML presence ---
-        function looksLikeHtml(input) {
-            if (!input || typeof input !== 'string') return false;
-            // Detect typical HTML tags like <h1>, <p>, <ul>, <li>, <strong>, etc.
-            return /<\/?[a-z][\s\S]*?>/i.test(input);
-        }
-
-        // --- Helper: Convert simple Markdown-ish text to structured HTML ---
-        function toStructuredHtml(input) {
-            if (!input || typeof input !== 'string') return '';
-            const lines = input.split(/\r?\n/);
-            const html = [];
-            let inList = false;
-
-            function closeListIfOpen() {
-                if (inList) {
-                    html.push('</ul>');
-                    inList = false;
-                }
-            }
-
-            function escapeHtml(str) {
-                return str.replace(/&/g, '&amp;')
-                          .replace(/</g, '&lt;')
-                          .replace(/>/g, '&gt;');
-            }
-
-            function boldify(str) {
-                return str.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-            }
-
-            for (let raw of lines) {
-                const line = raw.trim();
-                if (!line) {
-                    closeListIfOpen();
-                    continue;
-                }
-                // Headings
-                if (line.startsWith('### ')) {
-                    closeListIfOpen();
-                    html.push('<h3>' + boldify(escapeHtml(line.slice(4))) + '</h3>');
-                    continue;
-                }
-                if (line.startsWith('## ')) {
-                    closeListIfOpen();
-                    html.push('<h2>' + boldify(escapeHtml(line.slice(3))) + '</h2>');
-                    continue;
-                }
-                if (line.startsWith('# ')) {
-                    closeListIfOpen();
-                    html.push('<h2>' + boldify(escapeHtml(line.slice(2))) + '</h2>');
-                    continue;
-                }
-                // List items
-                if (/^[-*]\s+/.test(line)) {
-                    if (!inList) {
-                        html.push('<ul>');
-                        inList = true;
-                    }
-                    const item = line.replace(/^[-*]\s+/, '');
-                    html.push('<li>' + boldify(escapeHtml(item)) + '</li>');
-                    continue;
-                }
-                // Default paragraph
-                closeListIfOpen();
-                html.push('<p>' + boldify(escapeHtml(line)) + '</p>');
-            }
-            closeListIfOpen();
-            return html.join('\n');
-        }
-        // --- New Function: Clean text for copy/download ---
-        function getCleanTextResults() {
-            let textToCopy = resultsContent.innerHTML
-                .replace(/<img src="[^"]*"[^>]*><br><a [^>]*href="([^"]*)"[^>]*>Open Image in New Tab<\/a><br><br>/gi, '\nImage URL: $1\n') 
-                .replace(/<div style=[^>]+>Image preview failed to load[^<]+<\/div><br><a [^>]*href="([^"]*)"[^>]*>Open Image in New Tab<\/a><br><br>/gi, '\nImage URL: $1\n')
-                .replace(/<a [^>]*href="([^"]*)"[^>]*>Open Image in New Tab<\/a>/g, '\nImage URL: $1\n')
-                .replace(/<br><br>/g, '\n') // Handle line breaks
-                .replace(/<br>/g, '\n')
-                .replace(/<h2>/g, '\n## ') // Convert h2 to markdown-ish
-                .replace(/<\/h2>/g, '\n')
-                .replace(/<h3>/g, '\n### ') // Convert h3 to markdown-ish
-                .replace(/<\/h3>/g, '\n')
-                .replace(/<li>/g, '\n* ') // Convert li to markdown-ish
-                .replace(/<p>/g, '\n') // Add newline before paragraph
-                .replace(/<[^>]+>/g, ' ') // Strip other HTML tags
-                .replace(/&amp;/g, '&') // Decode HTML entities
-                .replace(/&lt;/g, '<')
-                .replace(/&gt;/g, '>')
-                .replace(/&nbsp;/g, ' ')
-                .replace(/  +/g, ' ') // Collapse multiple spaces
-                .trim();
-            return textToCopy;
-        }
-
-        // --- New Function: Copy to Clipboard ---
-        function copyResultsToClipboard() {
-            const textToCopy = getCleanTextResults();
-
-            const textArea = document.createElement('textarea');
-            textArea.value = textToCopy;
-            textArea.style.position = 'fixed';
-            textArea.style.opacity = 0;
-            document.body.appendChild(textArea);
-            textArea.select();
+        function displayGenuinenessBar(level) {
+            genuinenessBar.className = 'flex items-center gap-3 p-4 rounded-xl border transition-all duration-300 ';
+            genuinenessIconWrapper.innerHTML = '';
             
-            try {
-                document.execCommand('copy');
-                copyButton.textContent = 'Copied!';
-                setTimeout(() => { 
-                    if (copyButton.textContent === 'Copied!') {
-                        copyButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-4 12h8a2 2 0 002-2V8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg> Copy Results`;
-                    }
-                }, 2000);
-            } catch (err) {
-                console.error('Failed to copy text: ', err);
+            if (level === 'GREEN') {
+                genuinenessBar.classList.add('bg-green-50', 'border-green-200', 'text-green-900');
+                genuinenessIconWrapper.innerHTML = `<svg class="w-6 h-6 text-green-500 animate-check" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+                genuinenessText.textContent = "Genuineness Check: Appears Genuine";
+            } else if (level === 'YELLOW') {
+                genuinenessBar.classList.add('bg-yellow-50', 'border-yellow-200', 'text-yellow-900');
+                genuinenessIconWrapper.innerHTML = `<svg class="w-6 h-6 text-yellow-500 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
+                genuinenessText.textContent = "Genuineness Check: Use Caution";
+            } else {
+                genuinenessBar.classList.add('bg-red-50', 'border-red-200', 'text-red-900');
+                genuinenessIconWrapper.innerHTML = `<svg class="w-6 h-6 text-red-500 animate-shake" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+                genuinenessText.textContent = "Genuineness Check: Suspicious Indicators Found";
             }
-            document.body.removeChild(textArea);
-        }
-        
-        // --- New Function: Download as .txt ---
-        function downloadResultsAsTxt() {
-            const textToDownload = getCleanTextResults();
-            const blob = new Blob([textToDownload], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'extraction_results.txt';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            genuinenessBarContainer.classList.remove('hidden');
         }
 
-        // --- New Function: Load History ---
+        // --- History Management with Animations ---
+
         function loadHistory() {
-            const storedHistory = localStorage.getItem('analysisHistory');
-            if (storedHistory) {
-                history = JSON.parse(storedHistory);
-            }
+            const stored = localStorage.getItem('analysisHistory');
+            if (stored) history = JSON.parse(stored);
             renderHistory();
         }
 
-        // --- New Function: Render History ---
-        function renderHistory() {
+        function renderHistory(shouldAnimate = false) {
             historyList.innerHTML = '';
             if (history.length === 0) {
                 historyEmpty.classList.remove('hidden');
                 return;
             }
             historyEmpty.classList.add('hidden');
-            
-            // Render in reverse chronological order (newest first)
-            history.forEach((item, index) => {
-               const li = document.createElement('li');
-               // Make li a flex container to align title/URL and delete button
-               li.className = 'flex justify-between items-center p-3 rounded-lg hover:bg-gray-100 border border-gray-200';
-               
-               // Create a div for the text content to make it clickable
-               const textContent = document.createElement('div');
-               textContent.className = 'cursor-pointer flex-grow truncate';
-               // Use click handler to load from the *original* history array index
-               textContent.onclick = () => loadFromHistory(index); 
-               
-               const titleSpan = document.createElement('span');
-               titleSpan.className = 'block text-sm font-medium text-black truncate';
-               titleSpan.textContent = item.title;
-               
-               const urlSpan = document.createElement('span');
-               urlSpan.className = 'block text-xs text-gray-500 truncate';
-               urlSpan.textContent = item.url;
-               
-               textContent.appendChild(titleSpan);
-               textContent.appendChild(urlSpan);
 
-               // Create the delete button
-               const deleteButton = document.createElement('button');
-               deleteButton.className = 'ml-2 p-1 rounded-full text-gray-400 hover:bg-red-100 hover:text-red-500 transition-colors flex-shrink-0';
-               deleteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>`;
-               deleteButton.onclick = (e) => {
-                   e.stopPropagation(); // Stop click from bubbling to the li's click handler
-                   deleteHistoryItem(index);
-               };
-               
-               li.appendChild(textContent);
-               li.appendChild(deleteButton);
-               historyList.appendChild(li);
+            history.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.className = `group flex justify-between items-center p-4 hover:bg-gray-50 transition-colors duration-200 cursor-pointer`;
+                li.setAttribute('data-index', index); 
+                
+                // Staggered animation on load
+                if (shouldAnimate) {
+                    li.style.opacity = '0';
+                    li.style.animation = `fadeIn 0.4s ease forwards ${index * 0.05}s`;
+                }
+
+                li.onclick = () => loadFromHistory(index);
+
+                li.innerHTML = `
+                    <div class="flex-1 min-w-0 pr-4">
+                        <p class="text-sm font-semibold text-gray-900 truncate group-hover:text-blue-600 transition-colors">${item.title || 'Untitled'}</p>
+                        <p class="text-xs text-gray-500 truncate mt-0.5">${item.url}</p>
+                    </div>
+                    <button class="delete-btn p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100 focus:opacity-100" aria-label="Delete">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                `;
+
+                const btn = li.querySelector('.delete-btn');
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    deleteHistoryItem(index, li);
+                };
+
+                historyList.appendChild(li);
             });
         }
-        
-        // --- New Function: Save to History ---
-       function saveToHistory(url, title, content, genuineness, context) { // NEW: Added context
-            // Check if this URL is already the most recent item
-            if (history.length > 0 && history[0].url === url) {
-                // Update the existing item instead of duplicating
-                history[0].title = title;
-                history[0].content = content;
-                history[0].genuineness = genuineness;
-                history[0].context = context || 'General'; // NEW: Update context
-            } else {
-                // Remove any older entry for this URL
-                history = history.filter(item => item.url !== url);
-                
-                // Add new item to the beginning
-                history.unshift({ url, title, content, genuineness, context: context || 'General' }); // NEW: Add context
-            }
+
+        function deleteHistoryItem(index, element) {
+            deleteHistoryItemAnimation(element, () => {
+                history.splice(index, 1);
+                localStorage.setItem('analysisHistory', JSON.stringify(history));
+                renderHistory(false); 
+            });
+        }
+
+        // Helper to manage the animation logic
+        function deleteHistoryItemAnimation(element, callback) {
+             // Lock height to enable transition
+            element.style.maxHeight = element.offsetHeight + 'px';
+            element.offsetHeight; // Force reflow
+
+            // Add transition classes
+            element.classList.add('history-exit');
             
-            // Limit history to 10 items
-            if (history.length > 10) {
-                history = history.slice(0, 10);
+            requestAnimationFrame(() => {
+                element.classList.add('history-exit-active');
+            });
+
+            // Wait for animation to finish
+            setTimeout(() => {
+                if (callback) callback();
+            }, 400); 
+        }
+
+        function saveToHistory(url, title, content, genuineness, context) {
+            if (history.length > 0 && history[0].url === url) {
+                history[0] = { url, title, content, genuineness, context };
+            } else {
+                history = history.filter(h => h.url !== url); 
+                history.unshift({ url, title, content, genuineness, context });
             }
+            if (history.length > 10) history = history.slice(0, 10);
             
             localStorage.setItem('analysisHistory', JSON.stringify(history));
-            renderHistory();
+            renderHistory(true); 
         }
-        
-        // --- New Function: Load from History ---
+
         function loadFromHistory(index) {
             const item = history[index];
             if (!item) return;
 
-            // Hide analysis/error/loading
-            loading.classList.add('hidden');
-            errorBox.classList.add('hidden');
-            
-            // Populate UI
             urlInput.value = item.url;
             resultsContent.innerHTML = item.content;
-            displayGenuinenessBar(item.genuineness);
-            
-            // NEW: Set the context radio button
-            const contextToSelect = item.context || 'General'; // Default to General
-            const radioToSelect = document.querySelector(`input[name="analysisContext"][value="${contextToSelect}"]`);
-            if (radioToSelect) {
-                radioToSelect.checked = true;
-            } else {
-                // Fallback if context from history is no longer valid
-                document.getElementById('ctx-general').checked = true;
-            }
-            // END: Set context
-
-            // Set context for follow-ups
             currentAnalysisContext = item.content;
             currentUrl = item.url;
             
-            // Show results
+            const rad = document.querySelector(`input[name="analysisContext"][value="${item.context}"]`);
+            if(rad) rad.checked = true;
+
+            displayGenuinenessBar(item.genuineness);
             resultsDiv.classList.remove('hidden');
+            resultsDiv.classList.add('animate-fade-in');
             followUpSection.classList.remove('hidden');
             followUpResult.classList.add('hidden');
-            followUpError.classList.add('hidden');
-            followUpInput.value = '';
-
-            // Reset sources (history item doesn't save this)
-            sourcesList.innerHTML = `<li><a href="${item.url}" target="_blank" rel="noopener noreferrer" class="text-gray-700 hover:underline">${item.url}</a></li>`;
-        
-            // Move item to top of history
-            const [movedItem] = history.splice(index, 1);
-            history.unshift(movedItem);
-            localStorage.setItem('analysisHistory', JSON.stringify(history));
-            renderHistory(); // Re-render to show new order
-        }
-
-        // --- NEW Function: Delete Specific History Item ---
-        function deleteHistoryItem(index) {
-            // Remove the item at the specified index
+            
             history.splice(index, 1);
-            
-            // Update local storage
+            history.unshift(item);
             localStorage.setItem('analysisHistory', JSON.stringify(history));
-            
-            // Re-render the history list
-            renderHistory();
+            renderHistory(false); 
         }
-        // --- END NEW Function ---
 
-        // --- New Function: Clear History ---
         function clearHistory() {
-            history = [];
-            localStorage.removeItem('analysisHistory');
-            renderHistory();
+            const items = historyList.querySelectorAll('li');
+            if (items.length === 0) return;
+
+            // Staggered animation for all items
+            items.forEach((item, i) => {
+                setTimeout(() => {
+                    deleteHistoryItemAnimation(item);
+                }, i * 50);
+            });
+
+            // Wait for all animations to finish before clearing data
+            setTimeout(() => {
+                history = [];
+                localStorage.removeItem('analysisHistory');
+                renderHistory();
+            }, items.length * 50 + 350);
+        }
+
+        function copyResultsToClipboard() {
+            const text = resultsContent.innerText; 
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+        }
+        
+        function downloadResultsAsTxt() {
+            const text = resultsContent.innerText;
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'arachne-results.txt';
+            a.click();
+            URL.revokeObjectURL(url);
         }
 
         // --- Exponential Backoff Function ---
@@ -1206,7 +1023,6 @@ User Question: ${question}`;
                 throw error; // Throw error after all retries fail
             }
         }
-
     </script>
 </body>
 </html>
