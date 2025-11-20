@@ -210,15 +210,15 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
              </button>
-             <div class="flex gap-3">
+             <div id="explainerContentWrapper" class="flex gap-3 transition-opacity duration-500">
                 <div class="flex-shrink-0 mt-1">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
                 <div>
-                     <p class="font-semibold text-blue-900 mb-1">How this works</p>
-                     <p class="text-sm text-blue-800 leading-relaxed">Direct scraping from a browser is restricted. Arachne uses Gemini AI with Google Search to analyze and extract information securely from the URL you provide.</p>
+                     <p id="explainerTitle" class="font-semibold text-blue-900 mb-1">A Quick Note</p>
+                     <p id="explainerBody" class="text-sm text-blue-800 leading-relaxed">We have taken every single step to make the results accurate, but still, it can make mistakes. So please take precautions before performing any actions solely based on this analysis.</p>
                 </div>
              </div>
          </div>
@@ -492,6 +492,44 @@
         
         const contextButtonContainer = document.getElementById('contextButtonsContainer');
 
+        // --- Explainer Cycle Logic ---
+        let explainerInterval;
+
+        function startExplainerCycle() {
+            const wrapper = document.getElementById('explainerContentWrapper');
+            const title = document.getElementById('explainerTitle');
+            const body = document.getElementById('explainerBody');
+            
+            // Tracking state (starts with "A Quick Note" as defined in HTML)
+            let isNoteState = true; 
+
+            explainerInterval = setInterval(() => {
+                // 1. Fade out
+                wrapper.style.opacity = '0';
+
+                // 2. Swap text after fade out matches transition duration (500ms)
+                setTimeout(() => {
+                    if (isNoteState) {
+                        // Switch to "How this works"
+                        title.textContent = "How this works";
+                        body.textContent = "Directly scraping websites from a browser is blocked by security rules (CORS). This app uses the Gemini AI model with Google Search to analyze and extract information securely from the URL you provide.";
+                    } else {
+                        // Switch back to "A Quick Note"
+                        title.textContent = "A Quick Note";
+                        body.textContent = "We have taken every single step to make the results accurate, but still, it can make mistakes. So please take precautions before performing any actions solely based on this analysis.";
+                    }
+                    
+                    // Toggle state
+                    isNoteState = !isNoteState;
+
+                    // 3. Fade in
+                    wrapper.style.opacity = '1';
+                }, 500);
+
+            }, 10000); // 10 seconds cycle
+        }
+        // --- End Explainer Cycle Logic ---
+
         // --- API Configuration ---
         // The API key is now stored securely on the backend server
         // All requests are proxied through /api/generate-content
@@ -499,7 +537,11 @@
         // --- End of API Configuration ---
 
         // --- Event Listeners ---
-        document.addEventListener('DOMContentLoaded', loadHistory);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadHistory();
+            startExplainerCycle(); // Start the text cycling
+        });
+        
         scrapeButton.addEventListener('click', handleScrape);
         copyButton.addEventListener('click', () => {
             copyResultsToClipboard();
@@ -511,6 +553,7 @@
         
         if (closeExplainerButton) {
             closeExplainerButton.addEventListener('click', () => {
+                clearInterval(explainerInterval); // Stop the cycle if closed
                 explainerBox.style.opacity = '0';
                 setTimeout(() => explainerBox.classList.add('hidden'), 300);
             });
