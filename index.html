@@ -755,23 +755,25 @@
 
                 if (candidate && candidate.content?.parts?.[0]?.text) {
                     let text = candidate.content.parts[0].text;
-                    let genuinenessLevel = "YELLOW";
-                    let pageTitle = currentUrl;
+                    let genuinenessLevel = "YELLOW"; // Default
+                    let pageTitle = currentUrl; // Default to URL
 
-                    // Extract Metadata
-                    const genMatch = text.match(/<!-- GENUINENESS: (GREEN|YELLOW|RED) -->/);
+                    // Extract Metadata - IMPROVED REGEX
+                    // Now handles case-insensitivity (i flag) and variable whitespace (\s*)
+                    const genMatch = text.match(/<!--\s*GENUINENESS:\s*(GREEN|YELLOW|RED)\s*-->/i);
                     if (genMatch) {
-                        genuinenessLevel = genMatch[1];
+                        genuinenessLevel = genMatch[1].toUpperCase(); // Normalize to uppercase
                         text = text.replace(genMatch[0], '');
                     }
-                    const titleMatch = text.match(/<!-- TITLE: (.*?) -->/);
+                    
+                    const titleMatch = text.match(/<!--\s*TITLE:\s*(.*?)\s*-->/i);
                     if (titleMatch) {
                         pageTitle = titleMatch[1].trim();
                         text = text.replace(titleMatch[0], '');
                     }
 
                     resultsContent.innerHTML = text;
-                    currentAnalysisContext = text;
+                    currentAnalysisContext = text; // Save for follow-up
                     displayGenuinenessBar(genuinenessLevel);
                     
                     // Sources
