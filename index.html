@@ -1,0 +1,1591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arachne - For Humans</title>
+    <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+    
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Load Marked.js for Markdown Parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- Load Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gray: {
+                            750: '#2d3748', // Custom intermediate gray for cards in dark mode
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Use Poppins font family -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        /* --- Animations & Micro-interactions --- */
+
+        /* Custom Spinner */
+        .spinner {
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-left-color: #111;
+            animation: spin 1s ease infinite;
+        }
+        /* Dark mode spinner adjustment */
+        .dark .spinner {
+            border-color: rgba(255, 255, 255, 0.1);
+            border-left-color: #fff;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .animate-shake {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes checkPop {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-check {
+            animation: checkPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* Delete Animation Classes */
+        .history-exit {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .history-exit-active {
+            opacity: 0;
+            transform: translateX(100%);
+            max-height: 0 !important;
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            border-width: 0 !important;
+        }
+
+        /* Toast Notification */
+        #toastContainer {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 50;
+            pointer-events: none;
+        }
+        #toastContainer.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* Styling for generated content (Markdown/HTML) */
+        .gemini-content h1, .gemini-content h2, .gemini-content h3, .gemini-content h4 {
+            color: #111827;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+        .gemini-content h1 { font-size: 1.75rem; border-bottom: 2px solid #f3f4f6; padding-bottom: 0.5rem; }
+        .gemini-content h2 { font-size: 1.4rem; border-bottom: 1px solid #f3f4f6; padding-bottom: 0.25rem; }
+        .gemini-content h3 { font-size: 1.15rem; }
+        
+        .gemini-content ul, .gemini-content ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+            color: #374151;
+        }
+        .gemini-content ul { list-style-type: disc; }
+        .gemini-content ol { list-style-type: decimal; }
+        
+        .gemini-content li {
+            margin-bottom: 0.35rem;
+        }
+        .gemini-content p {
+            margin-bottom: 1rem;
+            line-height: 1.7;
+            color: #374151;
+        }
+        .gemini-content a {
+            color: #2563eb;
+            text-decoration: underline;
+            transition: color 0.2s;
+        }
+        .gemini-content a:hover {
+            color: #1d4ed8;
+        }
+        .gemini-content img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            margin-bottom: 1.5rem;
+            margin-left: auto;
+            margin-right: auto;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Table Styling */
+        .gemini-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+        .gemini-content th, .gemini-content td {
+            border: 1px solid #e5e7eb;
+            padding: 0.75rem;
+            text-align: left;
+        }
+        .gemini-content th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            color: #111827;
+        }
+        .gemini-content tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+
+        .gemini-content strong, .gemini-content b {
+            font-weight: 700;
+            color: #111827;
+        }
+        .gemini-content blockquote {
+            border-left: 4px solid #e5e7eb;
+            padding-left: 1rem;
+            font-style: italic;
+            color: #4b5563;
+            margin-bottom: 1rem;
+        }
+        .gemini-content code {
+            background-color: #f3f4f6;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: monospace;
+            font-size: 0.9em;
+            color: #c026d3;
+        }
+
+        /* Dark Mode Overrides - Aggressive Reset for Content */
+        :root.dark .gemini-content {
+            color: #e5e7eb; /* Base Light Grey Text */
+        }
+        /* Force all children to inherit color unless specified */
+        :root.dark .gemini-content * {
+            color: inherit; 
+            border-color: #374151;
+        }
+        
+        :root.dark .gemini-content h1, 
+        :root.dark .gemini-content h2, 
+        :root.dark .gemini-content h3, 
+        :root.dark .gemini-content h4 {
+            color: #f3f4f6; /* White */
+            border-color: #374151;
+        }
+        
+        :root.dark .gemini-content a {
+            color: #60a5fa; /* Blue-400 */
+        }
+        :root.dark .gemini-content a:hover {
+            color: #93c5fd; /* Blue-300 */
+        }
+        
+        :root.dark .gemini-content img {
+            border-color: #4b5563;
+            background-color: #1f2937;
+        }
+        
+        :root.dark .gemini-content strong, 
+        :root.dark .gemini-content b,
+        :root.dark .gemini-content th {
+            color: #f9fafb; /* White */
+        }
+        
+        :root.dark .gemini-content blockquote {
+            border-left-color: #eab308;
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #e5e7eb;
+        }
+        
+        :root.dark .gemini-content code {
+            background-color: #374151;
+            color: #f472b6;
+        }
+        
+        :root.dark .gemini-content tr:nth-child(even) {
+            background-color: #1f2937; /* Darker stripes */
+        }
+        
+        :root.dark .gemini-content th {
+            background-color: #374151;
+        }
+
+        /* Special fix for inline-styled divs (like Tracking boxes) */
+        :root.dark .gemini-content div[style*="background"], 
+        :root.dark .gemini-content div[style*="border"] {
+            background-color: #1f2937 !important; 
+            color: #e5e7eb !important; 
+            border-color: #4b5563 !important; 
+        }
+
+        /* URL overflow fix */
+        #sourcesList li, #sourcesList a {
+            overflow-wrap: break-word;
+            word-break: break-all;
+        }
+
+        /* Context Button Styling */
+        .context-button {
+            display: inline-block;
+            padding: 0.5rem 0.85rem;
+            border-radius: 9999px;
+            border: 1px solid #d1d5db;
+            background-color: #f9fafb;
+            color: #374151;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+        }
+        
+        :root:not(.dark) input[type="radio"]:not(:checked) + .context-button:hover {
+            border-color: #9ca3af;
+            background-color: #f3f4f6;
+        }
+
+        :root.dark .context-button {
+            background-color: #374151;
+            border-color: #4b5563;
+            color: #d1d5db;
+        }
+        
+        :root.dark input[type="radio"]:not(:checked) + .context-button:hover {
+            background-color: #4b5563;
+            border-color: #6b7280;
+            color: #ffffff;
+        }
+
+        input[type="radio"]:checked + .context-button {
+            background-color: #111827;
+            color: #ffffff;
+            border-color: #111827;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transform: scale(1.02);
+        }
+        :root.dark input[type="radio"]:checked + .context-button {
+            background-color: #000000;
+            border-color: #000000;
+            color: #FFD65A;
+        }
+
+        .context-button:active {
+            transform: scale(0.95);
+        }
+
+        /* Visual Preview Section */
+        #visualPreview {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .preview-card {
+            flex: 1;
+            min-width: 200px;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            background: #fff;
+        }
+        :root.dark .preview-card {
+            background: #1f2937;
+            border-color: #374151;
+        }
+        .preview-label {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            background: #f3f4f6;
+            color: #4b5563;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        :root.dark .preview-label {
+            background: #374151;
+            color: #9ca3af;
+            border-color: #4b5563;
+        }
+        .preview-img-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            min-height: 120px;
+        }
+
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 min-h-screen selection:bg-yellow-200 selection:text-black transition-colors duration-300">
+
+    <!-- Toast Notification Element -->
+    <div id="toastContainer" class="bg-gray-900 dark:bg-white dark:text-black text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400 dark:text-green-600" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+        </svg>
+        <span id="toastMessage" class="text-sm font-medium">Action successful</span>
+    </div>
+
+    <!-- Undo Notification Element -->
+    <div id="undoToast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 translate-y-20 opacity-0 pointer-events-none bg-gray-900 dark:bg-gray-800 text-white px-6 py-3 rounded-full shadow-xl flex items-center gap-4 transition-all duration-300 z-50 border border-gray-800 dark:border-gray-700">
+        <span id="undoText" class="text-sm font-medium">Item deleted</span>
+        <div class="flex items-center gap-3 border-l border-gray-700 pl-3">
+            <button id="undoButton" class="text-yellow-400 hover:text-yellow-300 text-sm font-bold uppercase tracking-wide transition-colors">Undo</button>
+            <button id="closeUndoButton" class="text-gray-400 hover:text-white transition-colors p-1 rounded-full hover:bg-gray-800">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <!-- Progress bar for timeout -->
+        <div class="absolute bottom-0 left-6 right-6 h-0.5 bg-gray-800 rounded-full overflow-hidden">
+             <div id="undoProgress" class="h-full bg-yellow-400 w-full origin-left transition-transform duration-[7000ms] ease-linear scale-x-0"></div>
+        </div>
+    </div>
+
+    <div class="container mx-auto max-w-3xl p-4 md:p-8">
+        
+        <header class="text-left mb-8 mt-4 transition-transform duration-300 hover:-translate-y-1">
+            <div class="flex items-center gap-3 mb-2">
+                <!-- Logo is now the theme toggle -->
+                <div id="themeToggleBtn" class="w-10 h-10 bg-black dark:bg-gray-800 rounded-lg flex items-center justify-center shadow-md cursor-pointer hover:scale-105 active:scale-95 hover:bg-gray-900 dark:hover:bg-gray-700 transition-all duration-200" title="Toggle Dark Mode">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-[#FFD65A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                    </svg>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white tracking-tight">Arachne Web</h1>
+            </div>
+            <p class="text-gray-500 dark:text-gray-400 ml-1">Your AI web weaver <b class="text-gray-900 dark:text-gray-200">by Undrstanding</b>, extracting info from any URL.</p>
+        </header>
+
+        <!-- Explainer Box -->
+         <div id="explainerBox" class="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/50 p-5 rounded-xl mb-8 relative shadow-sm transition-all duration-300 hover:shadow-md" role="alert">
+             <button id="closeExplainerButton" class="absolute top-3 right-3 text-blue-400 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-full p-1 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+             </button>
+             <div id="explainerContentWrapper" class="flex gap-3 transition-opacity duration-500">
+                <div class="flex-shrink-0 mt-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div>
+                      <p id="explainerTitle" class="font-semibold text-blue-900 dark:text-blue-100 mb-1">A Quick Note</p>
+                      <p id="explainerBody" class="text-sm text-blue-800 dark:text-blue-200 leading-relaxed">We have taken every single step to make the results accurate, but still, it can make mistakes. So please take precautions before performing any actions solely based on this analysis.</p>
+                </div>
+             </div>
+         </div>
+
+        <!-- Main Input Card -->
+        <div class="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm transition-all duration-300 hover:shadow-md">
+            <div class="space-y-6">
+                
+                <!-- Analysis Context -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Analysis Context</label>
+                    <div class="flex flex-wrap gap-2" id="contextButtonsContainer">
+                        <div>
+                            <input type="radio" id="ctx-general" name="analysisContext" value="General" class="sr-only" checked>
+                            <label for="ctx-general" class="context-button">General</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="ctx-job" name="analysisContext" value="Job/Internship" class="sr-only">
+                            <label for="ctx-job" class="context-button">Job/Internship</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="ctx-payments" name="analysisContext" value="Payments" class="sr-only">
+                            <label for="ctx-payments" class="context-button">Payments</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="ctx-ecommerce" name="analysisContext" value="E-commerce" class="sr-only">
+                            <label for="ctx-ecommerce" class="context-button">E-commerce</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="ctx-travel" name="analysisContext" value="Travel" class="sr-only">
+                            <label for="ctx-travel" class="context-button">Travel</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- URL Input -->
+                <div>
+                    <label for="url" class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Target URL</label>
+                    <div class="relative">
+                        <input type="url" id="url" class="block w-full rounded-xl border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white pl-4 pr-10 py-3 shadow-sm focus:border-black dark:focus:border-yellow-400 focus:ring-black dark:focus:ring-yellow-400 transition-all duration-200 placeholder-gray-400 dark:placeholder-gray-500" placeholder="https://example.com">
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Custom Checkboxes -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Data Points</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <!-- Checkbox Item -->
+                        <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors group select-none">
+                            <div class="relative flex items-center justify-center w-5 h-5 mr-3">
+                                <input type="checkbox" id="extractSummary" class="peer appearance-none w-5 h-5 border-2 border-gray-300 dark:border-gray-500 rounded transition-all duration-200 checked:bg-black dark:checked:bg-yellow-400 checked:border-black dark:checked:border-yellow-400 group-hover:border-gray-400" checked>
+                                <svg class="absolute w-3.5 h-3.5 text-white dark:text-black opacity-0 peer-checked:opacity-100 transition-opacity duration-200 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Summary</span>
+                        </label>
+
+                        <!-- Checkbox Item -->
+                        <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors group select-none">
+                            <div class="relative flex items-center justify-center w-5 h-5 mr-3">
+                                <input type="checkbox" id="extractImages" class="peer appearance-none w-5 h-5 border-2 border-gray-300 dark:border-gray-500 rounded transition-all duration-200 checked:bg-black dark:checked:bg-yellow-400 checked:border-black dark:checked:border-yellow-400 group-hover:border-gray-400" checked>
+                                <svg class="absolute w-3.5 h-3.5 text-white dark:text-black opacity-0 peer-checked:opacity-100 transition-opacity duration-200 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Images</span>
+                        </label>
+
+                        <!-- Checkbox Item -->
+                        <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors group select-none">
+                            <div class="relative flex items-center justify-center w-5 h-5 mr-3">
+                                <input type="checkbox" id="extractData" class="peer appearance-none w-5 h-5 border-2 border-gray-300 dark:border-gray-500 rounded transition-all duration-200 checked:bg-black dark:checked:bg-yellow-400 checked:border-black dark:checked:border-yellow-400 group-hover:border-gray-400" checked>
+                                <svg class="absolute w-3.5 h-3.5 text-white dark:text-black opacity-0 peer-checked:opacity-100 transition-opacity duration-200 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Key Data</span>
+                        </label>
+
+                        <!-- Checkbox Item -->
+                        <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors group select-none">
+                            <div class="relative flex items-center justify-center w-5 h-5 mr-3">
+                                <input type="checkbox" id="extractTracking" class="peer appearance-none w-5 h-5 border-2 border-gray-300 dark:border-gray-500 rounded transition-all duration-200 checked:bg-black dark:checked:bg-yellow-400 checked:border-black dark:checked:border-yellow-400 group-hover:border-gray-400" checked>
+                                <svg class="absolute w-3.5 h-3.5 text-white dark:text-black opacity-0 peer-checked:opacity-100 transition-opacity duration-200 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Tracking & Privacy</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button id="scrapeButton" class="w-full group flex justify-center items-center gap-2 bg-[#FFD65A] text-black font-semibold py-3.5 px-4 rounded-xl shadow-sm hover:bg-[#F9CC5E] hover:shadow-md active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-yellow-400 focus:ring-offset-2 transition-all duration-200 mt-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform group-hover:scale-110" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Analyze & Extract</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loading" class="hidden flex flex-col justify-center items-center my-10 animate-fade-in">
+            <div class="spinner w-10 h-10 border-4"></div>
+            <p class="mt-4 text-gray-600 dark:text-gray-300 font-medium">Weaving the web... Analyzing content.</p>
+        </div>
+
+        <!-- Error Message Box -->
+        <div id="errorBox" class="hidden bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-5 py-4 rounded-xl relative my-6 shadow-sm" role="alert">
+            <div class="flex items-start gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                </svg>
+                <div>
+                    <strong class="font-semibold block mb-1">Analysis Failed</strong>
+                    <span class="block text-sm opacity-90" id="errorMessage"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" class="hidden bg-white dark:bg-gray-800 p-6 md:p-8 mt-8 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm transition-all duration-500">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Extraction Results
+                </h2>
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <button id="downloadButton" class="flex-1 sm:flex-none flex justify-center items-center gap-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium py-2 px-4 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 active:scale-95 transition-all duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Download
+                    </button>
+                    <button id="copyButton" class="flex-1 sm:flex-none flex justify-center items-center gap-2 bg-gray-900 dark:bg-black text-white dark:text-yellow-400 text-sm font-medium py-2 px-4 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-900 active:scale-95 transition-all duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-4 12h8a2 2 0 002-2V8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        Copy
+                    </button>
+                </div>
+            </div>
+
+            <!-- Genuineness Bar -->
+            <div id="genuinenessBarContainer" class="hidden mb-6 animate-fade-in">
+                <div id="genuinenessBar" class="flex items-center gap-3 p-4 rounded-xl border transition-all duration-300">
+                    <div id="genuinenessIconWrapper" class="p-1.5 rounded-full bg-white dark:bg-gray-900 bg-opacity-50">
+                        <!-- Icon injected via JS -->
+                    </div>
+                    <span id="genuinenessText" class="font-semibold text-sm md:text-base"></span>
+                </div>
+            </div>
+
+            <div id="resultsContent" class="prose max-w-none gemini-content">
+                <!-- AI-generated content -->
+            </div>
+            
+            <div id="sources" class="mt-8 border-t border-gray-100 dark:border-gray-700 pt-6">
+                <h3 class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">Sources Found</h3>
+                <ul id="sourcesList" class="space-y-1 text-sm text-blue-600 dark:text-blue-400">
+                    <!-- Links injected here -->
+                </ul>
+            </div>
+            
+            <!-- Follow-up Questions Section -->
+            <div id="followUpSection" class="hidden mt-8 border-t border-gray-100 dark:border-gray-700 pt-6">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Ask Follow-up</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Need more details from the analysis? Ask below.</p>
+                <div class="flex gap-2">
+                    <div class="relative w-full">
+                        <input type="text" id="followUpInput" class="block w-full rounded-xl border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white pl-4 pr-10 py-3 shadow-sm focus:border-black dark:focus:border-yellow-400 focus:ring-black dark:focus:ring-yellow-400 transition-all duration-200 placeholder-gray-400 dark:placeholder-gray-500" placeholder="e.g., What is the return policy duration?">
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <button id="followUpButton" class="flex-shrink-0 bg-black text-white font-medium py-3 px-5 rounded-xl shadow-sm hover:bg-gray-800 active:scale-95 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white focus:ring-offset-2 transition-all duration-200">
+                        Ask
+                    </button>
+                </div>
+                <div id="followUpLoading" class="hidden flex items-center mt-4 text-gray-600 dark:text-gray-300">
+                    <div class="spinner w-5 h-5 border-2 border-gray-300 dark:border-gray-600 border-l-black dark:border-l-white mr-3"></div>
+                    <span class="text-sm font-medium">Thinking...</span>
+                </div>
+                <div id="followUpError" class="hidden bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-xl mt-4 text-sm animate-shake"></div>
+                <div id="followUpResult" class="hidden mt-4 p-4 bg-gray-50 dark:bg-gray-750 rounded-xl border border-gray-200 dark:border-gray-600 text-sm prose max-w-none gemini-content animate-fade-in"></div>
+            </div>
+        </div>
+
+        <!-- History Section -->
+        <div class="mt-12">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white">Recent Analysis</h2>
+                <button id="clearHistoryButton" class="text-sm text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium hover:underline transition-colors">Clear All</button>
+            </div>
+            <div id="historyContainer" class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                <ul id="historyList" class="divide-y divide-gray-100 dark:divide-gray-700">
+                    <!-- History items injected here -->
+                </ul>
+                <div id="historyEmpty" class="p-8 text-center">
+                    <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <p class="text-gray-500 dark:text-gray-400 text-sm">No history yet. Analyze a URL to get started.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer class="mt-16 mb-8 text-center">
+        <p class="text-2xl md:text-4xl font-bold text-gray-200 dark:text-gray-800 transition-colors duration-300">Made with <span class="text-red-500">❤️</span> by Undrstanding</p>
+    </footer>
+
+    <script>
+        // --- Theme Toggle Logic ---
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const html = document.documentElement;
+
+        // Initialize theme (Default to Light unless explicitly Dark)
+        if (localStorage.getItem('theme') === 'dark') {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+
+        // --- Global Variables ---
+        let currentAnalysisContext = "";
+        let currentUrl = "";
+        let history = [];
+        let lastDeletedItem = null;
+        let lastDeletedIndex = -1;
+        let undoTimeout = null;
+        
+        // Cancellation State
+        let abortController = null;
+        let isAnalyzing = false;
+        let isAsking = false;
+        let askAbortController = null;
+
+        // New Variables for Clear All Undo
+        let lastAction = null; // 'single' or 'all'
+        let deletedHistoryBackup = [];
+
+        // --- DOM Elements ---
+        const scrapeButton = document.getElementById('scrapeButton');
+        const urlInput = document.getElementById('url');
+        const loading = document.getElementById('loading');
+        const resultsDiv = document.getElementById('results');
+        const resultsContent = document.getElementById('resultsContent');
+        const sourcesList = document.getElementById('sourcesList');
+        const errorBox = document.getElementById('errorBox');
+        const errorMessage = document.getElementById('errorMessage');
+        
+        const explainerBox = document.getElementById('explainerBox');
+        const closeExplainerButton = document.getElementById('closeExplainerButton');
+        
+        const genuinenessBarContainer = document.getElementById('genuinenessBarContainer');
+        const genuinenessBar = document.getElementById('genuinenessBar');
+        const genuinenessText = document.getElementById('genuinenessText');
+        const genuinenessIconWrapper = document.getElementById('genuinenessIconWrapper');
+        
+        const extractSummary = document.getElementById('extractSummary');
+        const extractImages = document.getElementById('extractImages');
+        const extractData = document.getElementById('extractData');
+        const extractTracking = document.getElementById('extractTracking');
+
+        const copyButton = document.getElementById('copyButton');
+        const downloadButton = document.getElementById('downloadButton');
+        const toastContainer = document.getElementById('toastContainer');
+        const toastMessage = document.getElementById('toastMessage');
+
+        const followUpSection = document.getElementById('followUpSection');
+        const followUpInput = document.getElementById('followUpInput');
+        const followUpButton = document.getElementById('followUpButton');
+        const followUpLoading = document.getElementById('followUpLoading');
+        const followUpError = document.getElementById('followUpError');
+        const followUpResult = document.getElementById('followUpResult');
+        
+        const historyContainer = document.getElementById('historyContainer');
+        const historyList = document.getElementById('historyList');
+        const historyEmpty = document.getElementById('historyEmpty');
+        const clearHistoryButton = document.getElementById('clearHistoryButton');
+        
+        const contextButtonContainer = document.getElementById('contextButtonsContainer');
+
+        const undoToast = document.getElementById('undoToast');
+        const undoButton = document.getElementById('undoButton');
+        const closeUndoButton = document.getElementById('closeUndoButton');
+        const undoProgress = document.getElementById('undoProgress');
+        const undoText = document.getElementById('undoText');
+
+        // --- Explainer Cycle Logic ---
+        let explainerInterval;
+
+        function startExplainerCycle() {
+            const wrapper = document.getElementById('explainerContentWrapper');
+            const title = document.getElementById('explainerTitle');
+            const body = document.getElementById('explainerBody');
+            
+            // Tracking state (starts with "A Quick Note" as defined in HTML)
+            let isNoteState = true; 
+
+            explainerInterval = setInterval(() => {
+                // 1. Fade out
+                wrapper.style.opacity = '0';
+
+                // 2. Swap text after fade out matches transition duration (500ms)
+                setTimeout(() => {
+                    if (isNoteState) {
+                        // Switch to "How this works"
+                        title.textContent = "How this works";
+                        body.textContent = "Directly scraping websites from a browser is blocked by security rules (CORS). This app uses the Gemini AI model with Google Search to analyze and extract information securely from the URL you provide.";
+                    } else {
+                        // Switch back to "A Quick Note"
+                        title.textContent = "A Quick Note";
+                        body.textContent = "We have taken every single step to make the results accurate, but still, it can make mistakes. So please take precautions before performing any actions solely based on this analysis.";
+                    }
+                    
+                    // Toggle state
+                    isNoteState = !isNoteState;
+
+                    // 3. Fade in
+                    wrapper.style.opacity = '1';
+                }, 500);
+
+            }, 10000); // 10 seconds cycle
+        }
+        // --- End Explainer Cycle Logic ---
+
+        // --- API Configuration ---
+        const apiUrl = '/api/generate-content';
+        // --- End of API Configuration ---
+
+        // --- Event Listeners ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadHistory();
+            startExplainerCycle(); 
+        });
+        
+        scrapeButton.addEventListener('click', handleScrape);
+        copyButton.addEventListener('click', () => {
+            copyResultsToClipboard();
+            showToast("Results copied to clipboard");
+        });
+        downloadButton.addEventListener('click', downloadResultsAsTxt);
+        followUpButton.addEventListener('click', handleFollowUp);
+        clearHistoryButton.addEventListener('click', clearHistory);
+        
+        undoButton.addEventListener('click', handleUndo);
+        closeUndoButton.addEventListener('click', hideUndoToast);
+
+        // NEW: Keydown listener for Analysis Input
+        urlInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !scrapeButton.disabled) {
+                handleScrape();
+            }
+        });
+
+        // NEW: Keydown listener for Follow-up Input
+        followUpInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !followUpButton.disabled) {
+                handleFollowUp();
+            }
+        });
+
+        if (closeExplainerButton) {
+            closeExplainerButton.addEventListener('click', () => {
+                clearInterval(explainerInterval); // Stop the cycle if closed
+                explainerBox.style.opacity = '0';
+                setTimeout(() => explainerBox.classList.add('hidden'), 300);
+            });
+        }
+
+        // --- Helper Functions ---
+
+        function normalizeUrl(url) {
+            try {
+                url = (url || '').trim();
+                if ((url.startsWith('"') && url.endsWith('"')) || (url.startsWith("'") && url.endsWith("'"))) {
+                    url = url.slice(1, -1);
+                }
+                if (url.startsWith('@')) url = url.slice(1);
+                if (!url.startsWith('http://') && !url.startsWith('https://')) url = 'https://' + url;
+                const urlObj = new URL(url);
+                return urlObj.host.toLowerCase().startsWith('www.') ? urlObj.host.toLowerCase().slice(4) : urlObj.host.toLowerCase();
+            } catch (e) {
+                return (url || '').toLowerCase();
+            }
+        }
+
+        function isValidUrl(string) {
+            if (!string || string.trim() === '') return false;
+            let urlToTest = string.trim();
+            if (urlToTest.includes(' ')) return false;
+            if (!urlToTest.startsWith('http://') && !urlToTest.startsWith('https://')) urlToTest = 'https://' + urlToTest;
+            try {
+                const urlObj = new URL(urlToTest);
+                return urlObj.hostname && urlObj.hostname.includes('.');
+            } catch (_) {
+                return false;
+            }
+        }
+
+        function isSelfUrl(url) {
+            const currentHostRaw = (() => {
+                try { return new URL(window.location.origin).host.toLowerCase(); } catch { return window.location.host.toLowerCase(); }
+            })();
+            const currentHost = currentHostRaw.startsWith('www.') ? currentHostRaw.slice(4) : currentHostRaw;
+            const analyzedHostRaw = normalizeUrl(url);
+            const analyzedHost = analyzedHostRaw.startsWith('www.') ? analyzedHostRaw.slice(4) : analyzedHostRaw;
+            const aliases = [currentHost, 'arachneweb.vercel.app'];
+            return aliases.some(alias => {
+                if (!alias) return false;
+                if (analyzedHost === alias) return true;
+                return analyzedHost.endsWith('.' + alias);
+            });
+        }
+
+        function showToast(message) {
+            toastMessage.textContent = message;
+            toastContainer.classList.add('show');
+            setTimeout(() => {
+                toastContainer.classList.remove('show');
+            }, 3000);
+        }
+
+        function setUiLoading(isLoading) {
+            if (isLoading) {
+                // Change to STOP button logic
+                scrapeButton.disabled = false; // Enabled so user can click Stop
+                
+                scrapeButton.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 animate-pulse" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Stop Analysis</span>
+                `;
+                scrapeButton.classList.remove('bg-[#FFD65A]', 'hover:bg-[#F9CC5E]', 'text-black', 'opacity-75', 'cursor-not-allowed');
+                scrapeButton.classList.add('bg-red-500', 'hover:bg-red-600', 'text-white');
+                
+                // Disable Context & Inputs
+                contextButtonContainer.classList.add('opacity-50', 'pointer-events-none');
+                document.querySelectorAll('input[name="analysisContext"]').forEach(input => input.disabled = true);
+                
+                // Disable Checkboxes
+                [extractSummary, extractImages, extractData, extractTracking].forEach(el => el.disabled = true);
+                document.querySelectorAll('input[type="checkbox"]').forEach(el => el.parentElement.parentElement.classList.add('opacity-60'));
+
+                followUpButton.disabled = true; // Disable follow up while main analyzing
+                clearHistoryButton.disabled = true;
+
+            } else {
+                // Restore Analyze button logic
+                scrapeButton.disabled = false;
+                
+                scrapeButton.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform group-hover:scale-110" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Analyze & Extract</span>
+                `;
+                scrapeButton.classList.add('bg-[#FFD65A]', 'hover:bg-[#F9CC5E]', 'text-black');
+                scrapeButton.classList.remove('bg-red-500', 'hover:bg-red-600', 'text-white', 'opacity-75', 'cursor-not-allowed');
+                
+                // Enable Context & Inputs
+                contextButtonContainer.classList.remove('opacity-50', 'pointer-events-none');
+                document.querySelectorAll('input[name="analysisContext"]').forEach(input => input.disabled = false);
+                
+                // Enable Checkboxes
+                [extractSummary, extractImages, extractData, extractTracking].forEach(el => el.disabled = false);
+                document.querySelectorAll('input[type="checkbox"]').forEach(el => el.parentElement.parentElement.classList.remove('opacity-60'));
+
+                followUpButton.disabled = false;
+                clearHistoryButton.disabled = false;
+            }
+        }
+
+        function setAskButtonLoading(isLoading) {
+            if (isLoading) {
+                followUpButton.innerHTML = "Stop";
+                followUpButton.classList.remove('bg-black', 'hover:bg-gray-800');
+                followUpButton.classList.add('bg-red-500', 'hover:bg-red-600');
+            } else {
+                followUpButton.innerHTML = "Ask";
+                followUpButton.classList.add('bg-black', 'hover:bg-gray-800');
+                followUpButton.classList.remove('bg-red-500', 'hover:bg-red-600');
+            }
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorBox.classList.remove('hidden');
+            errorBox.classList.add('animate-shake');
+            setTimeout(() => errorBox.classList.remove('animate-shake'), 500);
+        }
+
+        // --- Main Logic ---
+
+        async function handleScrape() {
+            // Check if analysis is already running
+            if (isAnalyzing) {
+                if (abortController) {
+                    abortController.abort();
+                    showToast("Analysis stopped by user");
+                }
+                return;
+            }
+
+            currentUrl = urlInput.value.trim();
+            urlInput.value = currentUrl;
+
+            if (!currentUrl) {
+                showError("Please enter a URL to analyze.");
+                return;
+            }
+
+            if (!isValidUrl(currentUrl)) {
+                showError("Please enter a valid URL (e.g., example.com).");
+                return;
+            }
+            
+            if (!currentUrl.startsWith('http://') && !currentUrl.startsWith('https://')) {
+                currentUrl = 'https://' + currentUrl;
+                urlInput.value = currentUrl;
+            }
+
+            if (isSelfUrl(currentUrl)) {
+                handleSelfAnalysis();
+                return;
+            }
+
+            // Prepare Context
+            const selectedContext = document.querySelector('input[name="analysisContext"]:checked').value || 'General';
+            let contextInstruction = "Analyze the site's general purpose and trustworthiness.";
+            
+            if (selectedContext === 'Job/Internship') contextInstruction = "Analyze if this site appears to be a legitimate place for job applications. Look for red flags.";
+            else if (selectedContext === 'Payments') contextInstruction = "Analyze if this site appears secure for payments. Look for SSL and policies.";
+            else if (selectedContext === 'E-commerce') contextInstruction = "Analyze if this is a legitimate store. Look for policies, contact info, and products.";
+            else if (selectedContext === 'Travel') contextInstruction = "Analyze if this site is reliable for booking travel.";
+
+            // Prepare Tasks
+            let extractionTasks = [];
+            let needsImages = false;
+
+            if (extractSummary.checked) extractionTasks.push(`Provide a concise summary focused on ${selectedContext} context.`);
+            
+            // UPDATED IMAGE INSTRUCTION - Hybrid Approach
+            if (extractImages.checked) {
+                needsImages = true;
+                extractionTasks.push(`
+                **STRICT IMAGE EXTRACTION RULES:**
+                1. Look for high-quality images: Open Graph images (og:image), main hero banners, or the site logo.
+                2. **OUTPUT FORMAT:** - If an image URL is found: 
+                      <div class="img-container" style="text-align:center; margin: 10px 0;">
+                         <img src="{URL}" alt="Extracted Image" style="max-width: 100%; height: auto; border-radius: 0.5rem;" referrerpolicy="no-referrer" onerror="this.parentElement.style.display='none'">
+                      </div>
+                    - If NO image is found: Write exactly "<p>No images found.</p>"
+                3. **FORBIDDEN:** - DO NOT write descriptions like "The website likely contains...". 
+                    - DO NOT use generic placeholder images.
+                    - DO NOT output relative URLs (must start with http).
+                    - DO NOT use "File:" URLs from Wikipedia.
+                `);
+            }
+            
+            if (extractData.checked) extractionTasks.push(`Extract data points relevant to ${selectedContext}.`);
+            if (extractTracking.checked) extractionTasks.push("Investigate privacy policy and tracking. Include a specific 'Tracking & Privacy' section with a summary box.");
+
+            if (extractionTasks.length === 0) {
+                showError("Select at least one item to extract.");
+                return;
+            }
+            const taskString = extractionTasks.join("\n- ");
+
+            // Set State
+            isAnalyzing = true;
+            abortController = new AbortController();
+
+            // Reset UI
+            loading.classList.remove('hidden');
+            resultsDiv.classList.add('hidden');
+            resultsDiv.classList.remove('animate-fade-in'); 
+            errorBox.classList.add('hidden');
+            followUpSection.classList.add('hidden');
+            resultsContent.innerHTML = '';
+            sourcesList.innerHTML = '';
+            genuinenessBarContainer.classList.add('hidden');
+            
+            // Clear previous follow up results
+            followUpResult.innerHTML = '';
+            followUpResult.classList.add('hidden');
+            
+            setUiLoading(true); // Updates button to "Stop"
+
+            // --- GENERATE JS-BASED VISUALS ---
+            const domain = new URL(currentUrl).hostname;
+            const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+            
+            // Using Site Identity instead of full screenshot for reliability
+            let visualHTML = '';
+            if (needsImages) {
+                visualHTML = `
+                    <div id="visualPreview" class="flex justify-center mb-6">
+                        <div class="preview-card p-4 flex flex-col items-center justify-center gap-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm w-full sm:w-1/2">
+                            <div class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Site Identity</div>
+                            <img src="${faviconUrl}" alt="Site Icon" class="w-24 h-24 object-contain rounded-lg" onerror="this.style.display='none'">
+                            <p class="text-sm text-gray-500 dark:text-gray-400 font-medium break-all">${domain}</p>
+                        </div>
+                    </div>
+                `;
+            }
+            // ----------------------------------
+
+            try {
+                const systemPrompt = `You are a web scraper and trust analyzer. Analyze: ${currentUrl}
+                - User Selected Context: "${selectedContext}"
+                - Context Goal: ${contextInstruction}
+
+                - **CRITICAL TASK: Genuineness & Context Alignment**
+                  1. **Reputation:** Use Google Search to verify domain reputation/age.
+                  2. **Relevance:** Verify if the website matches the User Selected Context.
+                  
+                  - **GREEN (Safe & Relevant):** Established, reputable site AND matches the context (e.g., Amazon for E-commerce).
+                  - **YELLOW (Caution/Mismatch):** - Reputable site but **WRONG CONTEXT** (e.g., Harvard.edu is safe, but if Context is "Travel", mark YELLOW and warn it is not a travel booking site).
+                    - OR New/unknown brand with no external reviews.
+                  - **RED (Suspicious):** Known scams, phishing, or high-risk mismatch (e.g., "Free Money" site for "Job/Internship").
+
+                  - **Decision Rule:** If the site is genuine but irrelevant to the selected context, you MUST downgrade to YELLOW or RED.
+
+                - **Output Format:**
+                  - Start response *strictly* with: \`<!-- GENUINENESS: [GREEN|YELLOW|RED] -->\`
+                  - Then: \`<!-- TITLE: [Page Title] -->\`
+                  - Then perform ONLY the checked extraction tasks below:
+                  - ${taskString}
+                  - Use Markdown for lists and headers (#, ##, -).
+                  - Ensure image URLs are ABSOLUTE (start with http).
+                  - NO <html> or <body> tags.`;
+
+                const userQuery = `Analyze ${currentUrl}`;
+
+                const payload = {
+                    contents: [{ parts: [{ text: userQuery }] }],
+                    tools: [{ "google_search": {} }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] },
+                };
+
+                const response = await fetchWithBackoff(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    signal: abortController.signal // Pass signal to fetch
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({})); 
+                    throw new Error(errorData.error?.message || `API Error: ${response.statusText} (Code: ${response.status})`);
+                }
+
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
+
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    let text = candidate.content.parts[0].text;
+
+                    // Clean Markdown Code Fences
+                    text = text.replace(/^```html\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '');
+                    
+                    let genuinenessLevel = "YELLOW"; 
+                    let pageTitle = currentUrl; 
+
+                    // Extract Metadata
+                    const genMatch = text.match(/<!--\s*GENUINENESS:\s*(GREEN|YELLOW|RED)\s*-->/i);
+                    if (genMatch) {
+                        genuinenessLevel = genMatch[1].toUpperCase(); 
+                        text = text.replace(genMatch[0], '');
+                    }
+                    
+                    const titleMatch = text.match(/<!--\s*TITLE:\s*(.*?)\s*-->/i);
+                    if (titleMatch) {
+                        pageTitle = titleMatch[1].trim();
+                        text = text.replace(titleMatch[0], '');
+                    }
+
+                    // Parse Markdown using Marked.js
+                    const htmlContent = marked.parse(text);
+
+                    // Combine JS Visuals + AI Content
+                    resultsContent.innerHTML = visualHTML + htmlContent;
+                    
+                    currentAnalysisContext = text; // Save raw text for context
+                    displayGenuinenessBar(genuinenessLevel);
+                    
+                    // Sources
+                    let rawSources = candidate.groundingMetadata?.groundingAttributions?.map(a => a.web?.uri).filter(u => u);
+                    const sources = (rawSources && rawSources.length > 0) ? rawSources : [currentUrl];
+                    
+                    sourcesList.innerHTML = [...new Set(sources)].map(uri => 
+                        `<li><a href="${uri}" target="_blank" rel="noopener noreferrer" class="hover:underline">${uri}</a></li>`
+                    ).join('');
+
+                    resultsDiv.classList.remove('hidden');
+                    void resultsDiv.offsetWidth;
+                    resultsDiv.classList.add('animate-fade-in');
+                    
+                    followUpSection.classList.remove('hidden');
+                    // SAVE SOURCES
+                    saveToHistory(currentUrl, pageTitle, resultsContent.innerHTML, genuinenessLevel, selectedContext, sources);
+                    
+                    // ADD SCROLL HERE with slight delay to ensure DOM is ready
+                    setTimeout(() => {
+                        resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 100);
+
+                } else {
+                    throw new Error("No content returned.");
+                }
+
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    console.log('Analysis aborted');
+                    // Reset UI logic handled in finally block
+                } else {
+                    console.error(error);
+                    showError(error.message || "Analysis failed.");
+                }
+            } finally {
+                loading.classList.add('hidden');
+                setUiLoading(false); // Resets button to Analyze
+                isAnalyzing = false;
+                abortController = null;
+            }
+        }
+
+        function handleSelfAnalysis() {
+            loading.classList.add('hidden');
+            errorBox.classList.add('hidden');
+            
+            // Trigger Confetti Animation
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 150,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#FFD65A', '#000000', '#ffffff'] // Brand colors
+                });
+            }
+
+            // NEW: Add Visual Identity for Self
+            const visualHTML = `
+                <div id="visualPreview" class="flex justify-center mb-6">
+                    <div class="preview-card p-4 flex flex-col items-center justify-center gap-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm w-full sm:w-1/2">
+                        <div class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Site Identity</div>
+                        <img src="assets/logo.svg" alt="Arachne Logo" class="w-24 h-24 object-contain rounded-lg" onerror="this.style.display='none'">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 font-medium break-all">Arachne Web</p>
+                    </div>
+                </div>
+            `;
+            
+            const specialContent = `
+                <h2>Self-Diagnostic Result</h2>
+                <p><strong>Status:</strong> 100% Operational & Genuine.</p>
+                <p>I am Arachne, your extraction tool. The recursive analysis indicates I am functioning perfectly.</p>
+                <h3>Summary</h3>
+                <ul><li>Purpose: Web Analysis</li><li>Status: Online</li><li>Mood: Efficient</li></ul>
+            `;
+            
+            resultsContent.innerHTML = visualHTML + specialContent;
+            currentAnalysisContext = specialContent;
+            displayGenuinenessBar('GREEN');
+            genuinenessText.textContent = "Genuineness: 100% (It's me!)";
+            
+            const sources = [currentUrl];
+            sourcesList.innerHTML = `<li><a href="${currentUrl}" class="hover:underline">${currentUrl}</a></li>`;
+            
+            // Clear previous follow up results for self analysis
+            followUpResult.innerHTML = '';
+            followUpResult.classList.add('hidden');
+
+            resultsDiv.classList.remove('hidden');
+            resultsDiv.classList.add('animate-fade-in');
+            followUpSection.classList.remove('hidden');
+            
+            // SAVE SOURCES
+            saveToHistory(currentUrl, "Arachne Self-Check", resultsContent.innerHTML, 'GREEN', 'General', sources);
+            
+            // ADD SCROLL HERE with slight delay
+            setTimeout(() => {
+                resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+
+        async function handleFollowUp() {
+            if (isAsking) {
+                 if (askAbortController) {
+                    askAbortController.abort();
+                    showToast("Question cancelled");
+                }
+                return;
+            }
+
+            const question = followUpInput.value;
+            if (!question) return;
+
+            isAsking = true;
+            askAbortController = new AbortController();
+
+            followUpLoading.classList.remove('hidden');
+            followUpError.classList.add('hidden');
+            followUpResult.classList.add('hidden');
+            
+            setAskButtonLoading(true);
+
+            try {
+                const systemPrompt = `Context:\n${currentAnalysisContext}\n\nAnswer based on context: ${question}\nUse HTML fragments.`;
+                
+                const payload = {
+                    contents: [{ parts: [{ text: systemPrompt }] }],
+                };
+
+                const response = await fetchWithBackoff(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    signal: askAbortController.signal
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error?.message || `API Error: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (text) {
+                    // Parse Markdown using Marked.js for follow-up answer
+                    const htmlContent = marked.parse(text);
+                    
+                    followUpResult.innerHTML = htmlContent;
+                    followUpResult.classList.remove('hidden');
+                    followUpInput.value = '';
+                } else {
+                    throw new Error("No answer generated.");
+                }
+            } catch (e) {
+                if (e.name === 'AbortError') {
+                    console.log("Follow up aborted");
+                } else {
+                    followUpError.textContent = e.message;
+                    followUpError.classList.remove('hidden');
+                }
+            } finally {
+                followUpLoading.classList.add('hidden');
+                setAskButtonLoading(false);
+                isAsking = false;
+                askAbortController = null;
+            }
+        }
+
+        function displayGenuinenessBar(level) {
+            genuinenessBar.className = 'flex items-center gap-3 p-4 rounded-xl border transition-all duration-300 ';
+            genuinenessIconWrapper.innerHTML = '';
+            
+            if (level === 'GREEN') {
+                genuinenessBar.classList.add('bg-green-50', 'dark:bg-green-900/30', 'border-green-200', 'dark:border-green-800', 'text-green-900', 'dark:text-green-200');
+                genuinenessIconWrapper.innerHTML = `<svg class="w-6 h-6 text-green-500 animate-check" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+                genuinenessText.textContent = "Genuineness Check: Appears Genuine";
+            } else if (level === 'YELLOW') {
+                genuinenessBar.classList.add('bg-yellow-50', 'dark:bg-yellow-900/30', 'border-yellow-200', 'dark:border-yellow-800', 'text-yellow-900', 'dark:text-yellow-200');
+                genuinenessIconWrapper.innerHTML = `<svg class="w-6 h-6 text-yellow-500 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
+                genuinenessText.textContent = "Genuineness Check: Use Caution";
+            } else {
+                genuinenessBar.classList.add('bg-red-50', 'dark:bg-red-900/30', 'border-red-200', 'dark:border-red-800', 'text-red-900', 'dark:text-red-200');
+                genuinenessIconWrapper.innerHTML = `<svg class="w-6 h-6 text-red-500 animate-shake" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+                genuinenessText.textContent = "Genuineness Check: Suspicious Indicators Found";
+            }
+            genuinenessBarContainer.classList.remove('hidden');
+        }
+
+        // --- History Management with Animations ---
+
+        function loadHistory() {
+            const stored = localStorage.getItem('analysisHistory');
+            if (stored) history = JSON.parse(stored);
+            renderHistory();
+        }
+
+        function renderHistory(shouldAnimate = false) {
+            historyList.innerHTML = '';
+            if (history.length === 0) {
+                historyEmpty.classList.remove('hidden');
+                return;
+            }
+            historyEmpty.classList.add('hidden');
+
+            history.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.className = `group flex justify-between items-center p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0`;
+                li.setAttribute('data-index', index); 
+                
+                // Staggered animation on load
+                if (shouldAnimate) {
+                    li.style.opacity = '0';
+                    li.style.animation = `fadeIn 0.4s ease forwards ${index * 0.05}s`;
+                }
+
+                li.onclick = () => loadFromHistory(index);
+
+                li.innerHTML = `
+                    <div class="flex-1 min-w-0 pr-4">
+                        <p class="text-sm font-semibold text-gray-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">${item.title || 'Untitled'}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">${item.url}</p>
+                    </div>
+                    <button class="delete-btn p-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all opacity-0 group-hover:opacity-100 focus:opacity-100" aria-label="Delete">
+                        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                `;
+
+                const btn = li.querySelector('.delete-btn');
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    deleteHistoryItem(index, li);
+                };
+
+                historyList.appendChild(li);
+            });
+        }
+
+        function deleteHistoryItem(index, element) {
+            // Store data before deletion for Undo capability
+            lastDeletedItem = history[index];
+            lastDeletedIndex = index;
+            lastAction = 'single'; // Mark as single item deletion
+
+            deleteHistoryItemAnimation(element, () => {
+                history.splice(index, 1);
+                localStorage.setItem('analysisHistory', JSON.stringify(history));
+                renderHistory(false); 
+                showUndoToast("Item deleted");
+            });
+        }
+
+        function clearHistory() {
+            const items = historyList.querySelectorAll('li');
+            if (items.length === 0) return;
+
+            // Backup history before clearing
+            deletedHistoryBackup = [...history];
+            lastAction = 'all'; // Mark as full clear
+
+            // Staggered animation for all items
+            items.forEach((item, i) => {
+                setTimeout(() => {
+                    deleteHistoryItemAnimation(item);
+                }, i * 50);
+            });
+
+            // Wait for all animations to finish before clearing data
+            setTimeout(() => {
+                history = [];
+                localStorage.removeItem('analysisHistory');
+                renderHistory();
+                showUndoToast("History cleared"); // Show specific message
+            }, items.length * 50 + 350);
+        }
+
+        function showUndoToast(message = "Item deleted") {
+            if (undoTimeout) clearTimeout(undoTimeout);
+            
+            // Update Text
+            undoText.textContent = message;
+
+            // Reset Progress Bar
+            undoProgress.style.transition = 'none';
+            undoProgress.style.transform = 'scaleX(1)';
+            void undoProgress.offsetWidth; // Trigger reflow
+            
+            // Show Toast
+            undoToast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+            
+            // Start Progress Animation
+            undoProgress.style.transition = 'transform 7000ms linear';
+            undoProgress.style.transform = 'scaleX(0)';
+
+            undoTimeout = setTimeout(() => {
+                hideUndoToast();
+            }, 7000);
+        }
+
+        function hideUndoToast() {
+            undoToast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+            if (undoTimeout) clearTimeout(undoTimeout);
+        }
+
+        function handleUndo() {
+            if (lastAction === 'single' && lastDeletedItem) {
+                // Restore single item
+                history.splice(lastDeletedIndex, 0, lastDeletedItem);
+                showToast("Item restored");
+            } else if (lastAction === 'all' && deletedHistoryBackup.length > 0) {
+                // Restore all items
+                history = [...deletedHistoryBackup];
+                showToast("History restored");
+            } else {
+                return; // Nothing to undo
+            }
+
+            // Save and Re-render
+            localStorage.setItem('analysisHistory', JSON.stringify(history));
+            renderHistory(true); // Re-render with animation
+            hideUndoToast();
+            
+            // Reset state
+            lastAction = null;
+            lastDeletedItem = null;
+            deletedHistoryBackup = [];
+        }
+
+        // Helper to manage the animation logic
+        function deleteHistoryItemAnimation(element, callback) {
+             // Lock height to enable transition
+            element.style.maxHeight = element.offsetHeight + 'px';
+            element.offsetHeight; // Force reflow
+
+            // Add transition classes
+            element.classList.add('history-exit');
+            
+            requestAnimationFrame(() => {
+                element.classList.add('history-exit-active');
+            });
+
+            // Wait for animation to finish
+            setTimeout(() => {
+                if (callback) callback();
+            }, 400); 
+        }
+
+        // UPDATED: Now saving 'sources'
+        function saveToHistory(url, title, content, genuineness, context, sources) {
+            if (history.length > 0 && history[0].url === url) {
+                history[0] = { url, title, content, genuineness, context, sources };
+            } else {
+                history = history.filter(h => h.url !== url); 
+                history.unshift({ url, title, content, genuineness, context, sources });
+            }
+            if (history.length > 10) history = history.slice(0, 10);
+            
+            localStorage.setItem('analysisHistory', JSON.stringify(history));
+            renderHistory(true); 
+        }
+
+        // UPDATED: Now loading 'sources' with fallback
+        function loadFromHistory(index) {
+            const item = history[index];
+            if (!item) return;
+
+            urlInput.value = item.url;
+            resultsContent.innerHTML = item.content;
+            currentAnalysisContext = item.content;
+            currentUrl = item.url;
+            
+            const rad = document.querySelector(`input[name="analysisContext"][value="${item.context}"]`);
+            if(rad) rad.checked = true;
+
+            displayGenuinenessBar(item.genuineness);
+            
+            // Load Sources
+            const sources = (item.sources && item.sources.length > 0) ? item.sources : [item.url];
+            sourcesList.innerHTML = [...new Set(sources)].map(uri => 
+                `<li><a href="${uri}" target="_blank" rel="noopener noreferrer" class="hover:underline">${uri}</a></li>`
+            ).join('');
+
+            // Clear Follow Up results for history load
+            followUpResult.innerHTML = '';
+            followUpResult.classList.add('hidden');
+
+            resultsDiv.classList.remove('hidden');
+            resultsDiv.classList.add('animate-fade-in');
+            followUpSection.classList.remove('hidden');
+            followUpResult.classList.add('hidden');
+            
+            history.splice(index, 1);
+            history.unshift(item);
+            localStorage.setItem('analysisHistory', JSON.stringify(history));
+            renderHistory(false); 
+            
+            // Scroll to results with slight delay
+            setTimeout(() => {
+                resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+
+        function copyResultsToClipboard() {
+            const text = resultsContent.innerText; 
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+        }
+        
+        function downloadResultsAsTxt() {
+            const text = resultsContent.innerText;
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'arachne-results.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // --- Exponential Backoff Function ---
+        async function fetchWithBackoff(url, options, retries = 3, delay = 1000) {
+            try {
+                const response = await fetch(url, options);
+                if (response.status === 429 && retries > 0) {
+                    // Check if cancelled during delay
+                    if (options.signal && options.signal.aborted) throw new DOMException('Aborted', 'AbortError');
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    return fetchWithBackoff(url, options, retries - 1, delay * 2);
+                }
+                return response;
+            } catch (error) {
+                // Throw abort error immediately
+                if (error.name === 'AbortError') throw error;
+
+                if (retries > 0) {
+                      if (options.signal && options.signal.aborted) throw new DOMException('Aborted', 'AbortError');
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    return fetchWithBackoff(url, options, retries - 1, delay * 2);
+                }
+                throw error; // Throw error after all retries fail
+            }
+        }
+    </script>
+</body>
+</html>"
