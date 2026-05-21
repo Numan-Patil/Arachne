@@ -13,7 +13,7 @@ app.use(express.static(path.join(__dirname)));
 
 // API key from environment variable
 const API_KEY = process.env.GEMINI_API_KEY;
-const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-preview-09-2025';
+const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
 if (!API_KEY) {
   console.error('ERROR: GEMINI_API_KEY environment variable is not set!');
