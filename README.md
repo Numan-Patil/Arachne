@@ -80,6 +80,6 @@ MIT
 
 ## Credits
 
-Created by **Undrstanding**
+Created by **Numan Patil**
 
 # Arachne
