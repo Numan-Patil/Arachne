@@ -861,7 +861,7 @@
             const currentHost = currentHostRaw.startsWith('www.') ? currentHostRaw.slice(4) : currentHostRaw;
             const analyzedHostRaw = normalizeUrl(url);
             const analyzedHost = analyzedHostRaw.startsWith('www.') ? analyzedHostRaw.slice(4) : analyzedHostRaw;
-            const aliases = [currentHost, 'arachneweb.vercel.app'];
+            const aliases = [currentHost, 'arachneweb.vercel.app', 'undrstanding.com'];
             return aliases.some(alias => {
                 if (!alias) return false;
                 if (analyzedHost === alias) return true;
